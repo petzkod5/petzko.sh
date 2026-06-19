@@ -8,7 +8,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import { appVersion, buildEnv } from '@/config'
-import { useNavStack } from '@/state/useNavStack'
+import { useNavStack, type Layer } from '@/state/useNavStack'
 import { About } from '@/sections/About'
 import { Contact } from '@/sections/Contact'
 import { Portfolio } from '@/sections/Portfolio'
@@ -64,6 +64,63 @@ export function Tui({ building = false }: TuiProps) {
   const scrollIdle = useRef<number>()
   const [canScrollDown, setCanScrollDown] = useState(false)
 
+  // Mirror the latest overlay/nav state so the once-registered popstate
+  // listener can read current values without re-subscribing.
+  const navRef = useRef({ showHelp, cmdMode, atRoot })
+  navRef.current = { showHelp, cmdMode, atRoot }
+
+  const closeCmd = useCallback(() => {
+    setCmdMode(false)
+    setCmdValue('')
+  }, [])
+
+  const toggleCmd = useCallback(() => {
+    if (navRef.current.cmdMode) {
+      closeCmd()
+    } else {
+      setShowHelp(false)
+      setCmdMode(true)
+    }
+  }, [closeCmd])
+
+  // Drill into a section, pushing a browser history entry so the device Back
+  // gesture/button (and desktop browser Back) pops back out.
+  const enterSection = useCallback(
+    (i: number) => {
+      setSelected(i)
+      push({ id: SECTIONS[i].name, label: SECTIONS[i].name })
+      window.history.pushState({ petzkoNav: true }, '')
+    },
+    [push],
+  )
+
+  // Jump straight to a section (command / breadcrumb). Keep history exactly one
+  // section-level deep regardless of where the jump came from.
+  const jumpTo = useCallback(
+    (layer: Layer) => {
+      const wasRoot = navRef.current.atRoot
+      goTo(layer)
+      if (wasRoot) window.history.pushState({ petzkoNav: true }, '')
+      else window.history.replaceState({ petzkoNav: true }, '')
+    },
+    [goTo],
+  )
+
+  // Unified back/close: dismiss an open overlay first (overlays aren't tracked
+  // in history), otherwise step back through history so the device Back gesture
+  // and in-app Back stay in sync.
+  const goBack = useCallback(() => {
+    if (navRef.current.cmdMode) {
+      closeCmd()
+      return
+    }
+    if (navRef.current.showHelp) {
+      setShowHelp(false)
+      return
+    }
+    if (!navRef.current.atRoot) window.history.back()
+  }, [closeCmd])
+
   // True when the active pane has more *content* below the fold. The pane's
   // bottom padding (slack for the chevron) is excluded so reaching the last
   // row — by scrolling or by keyboard selection — clears the hint.
@@ -111,12 +168,29 @@ export function Tui({ building = false }: TuiProps) {
     }
   }, [recomputeScroll, current, showHelp, atRoot])
 
+  // Device/browser Back → pop the top-most thing. Overlays (which don't push a
+  // history entry) are closed first, re-pushing a state so we stay on the
+  // current section; otherwise pop a navigation layer.
   useEffect(() => {
-    const open = (i: number) => {
-      setSelected(i)
-      push({ id: SECTIONS[i].name, label: SECTIONS[i].name })
+    const onPop = () => {
+      const s = navRef.current
+      if (s.cmdMode) {
+        closeCmd()
+        window.history.pushState({ petzkoNav: true }, '')
+        return
+      }
+      if (s.showHelp) {
+        setShowHelp(false)
+        window.history.pushState({ petzkoNav: true }, '')
+        return
+      }
+      pop()
     }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [pop, closeCmd])
 
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // Ignore global keys while typing in a field (the command input).
       const t = e.target as HTMLElement | null
@@ -125,8 +199,7 @@ export function Tui({ building = false }: TuiProps) {
       // `:` opens command mode from anywhere.
       if (e.key === ':') {
         e.preventDefault()
-        setShowHelp(false)
-        setCmdMode(true)
+        toggleCmd()
         return
       }
       if (e.key === '?') {
@@ -143,7 +216,7 @@ export function Tui({ building = false }: TuiProps) {
       }
       if (e.key === 'Escape') {
         e.preventDefault()
-        pop() // pop the top-most layer (no-op at <home>)
+        goBack() // close overlay or pop a layer (no-op at <home>)
         return
       }
       // Inside a section: j/k/arrows (and g/G, space/PageUp-Down) scroll the pane.
@@ -210,30 +283,20 @@ export function Tui({ building = false }: TuiProps) {
           break
         case 'Enter':
           e.preventDefault()
-          open(selected)
+          enterSection(selected)
           break
         default: {
           const idx = SECTIONS.findIndex((s) => s.key === e.key)
           if (idx !== -1) {
             e.preventDefault()
-            open(idx)
+            enterSection(idx)
           }
         }
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [showHelp, atRoot, selected, push, pop, current])
-
-  const openSection = (i: number) => {
-    setSelected(i)
-    push({ id: SECTIONS[i].name, label: SECTIONS[i].name })
-  }
-
-  const closeCmd = () => {
-    setCmdMode(false)
-    setCmdValue('')
-  }
+  }, [showHelp, atRoot, selected, current, enterSection, goBack, toggleCmd])
 
   // Run a `:command` — jump to a section, or to the admin (coming soon) page.
   const runCommand = (raw: string) => {
@@ -241,8 +304,8 @@ export function Tui({ building = false }: TuiProps) {
     closeCmd()
     if (!v) return
     const section = SECTIONS.find((s) => s.name === v)
-    if (section) goTo({ id: section.name, label: section.name })
-    else if (v === 'admin') goTo({ id: 'admin', label: 'admin' })
+    if (section) jumpTo({ id: section.name, label: section.name })
+    else if (v === 'admin') jumpTo({ id: 'admin', label: 'admin' })
     // unknown command: ignore
   }
 
@@ -272,9 +335,25 @@ export function Tui({ building = false }: TuiProps) {
         </dl>
 
         <div className={styles.keys}>
-          <div className={styles.keyRow}>
+          <button
+            type="button"
+            className={styles.keyBtn}
+            onClick={() => setShowHelp((h) => !h)}
+            aria-label="Toggle help"
+          >
             <span className={styles.hk}>&lt;?&gt;</span> Help
-          </div>
+          </button>
+          <button
+            type="button"
+            className={styles.keyBtn}
+            // Don't steal focus from the command input, so clicking this while
+            // it's open toggles it closed instead of blur-closing + reopening.
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggleCmd}
+            aria-label="Toggle commands"
+          >
+            <span className={styles.hk}>&lt;:&gt;</span> Commands
+          </button>
         </div>
 
         <pre className={styles.logo} aria-label="dp">
@@ -329,7 +408,7 @@ export function Tui({ building = false }: TuiProps) {
                     key={s.name}
                     className={`${styles.row} ${i === selected ? styles.rowSel : ''}`}
                     onMouseEnter={() => setSelected(i)}
-                    onClick={() => openSection(i)}
+                    onClick={() => enterSection(i)}
                     aria-selected={i === selected}
                   >
                     <td>{s.name}</td>
@@ -378,16 +457,37 @@ export function Tui({ building = false }: TuiProps) {
         </div>
       </main>
 
-      {/* ── Status bar: navigation layer stack ── */}
+      {/* ── Status bar: navigation layer stack + tappable actions ── */}
       <footer className={styles.status}>
-        <Breadcrumb stack={stack} />
-        <span className={styles.statusHint}>
-          {building
-            ? 'constructing…'
-            : showHelp || !atRoot
-              ? '<esc> back'
-              : '<?> help'}
-        </span>
+        <Breadcrumb
+          stack={stack}
+          onNavigate={(i) => {
+            const steps = stack.length - 1 - i
+            if (steps > 0) window.history.go(-steps)
+          }}
+        />
+        {building ? (
+          <span className={styles.statusHint}>constructing…</span>
+        ) : showHelp || !atRoot ? (
+          // Clickable so touch users can go back without a keyboard.
+          <button
+            type="button"
+            className={styles.statusHint}
+            onClick={goBack}
+            aria-label="Back"
+          >
+            &lt;esc&gt; back
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.statusHint}
+            onClick={() => setShowHelp((h) => !h)}
+            aria-label="Toggle help"
+          >
+            &lt;?&gt; help
+          </button>
+        )}
       </footer>
     </div>
   )

@@ -13,6 +13,22 @@
   border-radius: 1px;
   /* parent layers — cyan */
   background: var(--color-accent-cyan);
+  /* normalize <button> crumbs to match <span> crumbs */
+  font: inherit;
+  line-height: inherit;
+  border: none;
+}
+
+/* Parent crumbs are tappable (a <button>) — go back to that layer. */
+button.crumb {
+  cursor: pointer;
+}
+
+button.crumb:hover,
+button.crumb:focus-visible {
+  outline: none;
+  box-shadow: 0 0 8px var(--crt-glow-soft);
+  filter: brightness(1.12);
 }
 
 /* The top-most (current) layer — orange, k9s-style. */

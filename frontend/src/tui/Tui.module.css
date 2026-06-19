@@ -99,6 +99,28 @@
   color: var(--color-text-body);
 }
 
+/* Navbar Help control — looks like the old text hint, but tappable. */
+.keyBtn {
+  margin: 0;
+  padding: 0.1rem 0;
+  background: none;
+  border: none;
+  font: inherit;
+  /* <button> defaults to centered text; left-align so the <?> / <:> keys line
+   * up across the stacked hints. */
+  text-align: left;
+  white-space: nowrap;
+  color: var(--color-text-body);
+  text-shadow: inherit;
+  cursor: pointer;
+}
+
+.keyBtn:hover,
+.keyBtn:focus-visible {
+  outline: none;
+  color: var(--color-text-primary);
+}
+
 .hk {
   color: var(--color-accent-amber);
 }
@@ -256,12 +278,26 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  flex-wrap: wrap;
 }
 
+/* Right-aligned status hint. Rendered as a <button> so it doubles as a tappable
+ * back/help control on touch, but styled as plain terminal text. */
 .statusHint {
   margin-left: auto;
-  color: var(--color-text-secondary);
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
   letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.statusHint:hover,
+.statusHint:focus-visible {
+  outline: none;
+  color: var(--color-text-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {
