@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/petzkod5/petzko.sh/compare/v1.3.2...v1.3.3) (2026-06-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency react-pdf to ^9.2.1 ([#7](https://github.com/petzkod5/petzko.sh/issues/7)) ([471e89f](https://github.com/petzkod5/petzko.sh/commit/471e89ff07b37bdc586dd41ece5e8f59b366997b))
+
 ## [1.3.2](https://github.com/petzkod5/petzko.sh/compare/v1.3.1...v1.3.2) (2026-06-19)
 
 
