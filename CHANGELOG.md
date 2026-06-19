@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/petzkod5/petzko.sh/compare/v1.0.0...v1.1.0) (2026-06-19)
+
+
+### Features
+
+* **frontend:** show app version in the Build header line ([519ad1f](https://github.com/petzkod5/petzko.sh/commit/519ad1f3fb2668f32f656a532f9042acb72fc946))
+
 # 1.0.0 (2026-06-19)
 
 
