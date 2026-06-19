@@ -74,7 +74,7 @@ jobs:
       # Report-only (the release already shipped by this point).
       - name: Scan released image (Trivy)
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           image-ref: ghcr.io/petzkod5/petzko-sh:${{ steps.semantic.outputs.new_release_version }}
           severity: CRITICAL,HIGH
