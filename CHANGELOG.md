@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/petzkod5/petzko.sh/compare/v1.3.5...v1.4.0) (2026-06-19)
+
+
+### Features
+
+* serve resume live from latest release via resume-proxy backend ([ae8ae18](https://github.com/petzkod5/petzko.sh/commit/ae8ae18370dd1e73b4f65331a733387938f483bb))
+
 ## [1.3.5](https://github.com/petzkod5/petzko.sh/compare/v1.3.4...v1.3.5) (2026-06-19)
 
 
