@@ -1,3 +1,10 @@
+## [1.3.4](https://github.com/petzkod5/petzko.sh/compare/v1.3.3...v1.3.4) (2026-06-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency yaml to ^2.9.0 ([#8](https://github.com/petzkod5/petzko.sh/issues/8)) ([e7b00f5](https://github.com/petzkod5/petzko.sh/commit/e7b00f54f5bac15c9523aa6ec637e42677ffa864))
+
 ## [1.3.3](https://github.com/petzkod5/petzko.sh/compare/v1.3.2...v1.3.3) (2026-06-19)
 
 
