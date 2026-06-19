@@ -7,7 +7,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
-import { buildEnv } from '@/config'
+import { appVersion, buildEnv } from '@/config'
 import { useNavStack } from '@/state/useNavStack'
 import { About } from '@/sections/About'
 import { Contact } from '@/sections/Contact'
@@ -44,7 +44,7 @@ const SECTIONS = [
 const CONTEXT = [
   ['Context', 'petzko.sh'],
   ['Host', 'rivendell'],
-  ['Build', buildEnv],
+  ['Build', `${buildEnv} · v${appVersion}`],
   ['Sections', String(SECTIONS.length)],
 ] as const
 

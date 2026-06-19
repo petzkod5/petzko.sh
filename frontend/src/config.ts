@@ -12,3 +12,9 @@ const runtime =
  * Helm without rebuilding the image. Falls back to "dev" for local work.
  */
 export const buildEnv = runtime.buildEnv || 'dev'
+
+/**
+ * App version, baked in at build time from package.json (bumped per release by
+ * semantic-release). Shown next to the build environment in the TUI header.
+ */
+export const appVersion = __APP_VERSION__
