@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/petzkod5/petzko.sh/compare/v1.7.1...v1.7.2) (2026-06-19)
+
+
+### Bug Fixes
+
+* **deps:** update nginxinc/nginx-unprivileged docker tag to v1.31 ([#12](https://github.com/petzkod5/petzko.sh/issues/12)) ([9e36f89](https://github.com/petzkod5/petzko.sh/commit/9e36f89a795646b84c6e249798044c50e1807a5b))
+
 ## [1.7.1](https://github.com/petzkod5/petzko.sh/compare/v1.7.0...v1.7.1) (2026-06-19)
 
 
