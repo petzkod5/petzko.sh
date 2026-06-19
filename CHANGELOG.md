@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/petzkod5/petzko.sh/compare/v1.4.1...v1.5.0) (2026-06-19)
+
+
+### Features
+
+* retro 80s loading splash for the resume viewport ([81eefb1](https://github.com/petzkod5/petzko.sh/commit/81eefb1dd4cdae6861a4221a84c4d13a4aac47ac))
+
 ## [1.4.1](https://github.com/petzkod5/petzko.sh/compare/v1.4.0...v1.4.1) (2026-06-19)
 
 
