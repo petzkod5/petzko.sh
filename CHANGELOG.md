@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/petzkod5/petzko.sh/compare/v1.5.0...v1.6.0) (2026-06-19)
+
+
+### Features
+
+* SEO basics — robots.txt, sitemap.xml, JSON-LD, canonical ([d937e27](https://github.com/petzkod5/petzko.sh/commit/d937e270e5e43b31a848a2424b16f7592992f644))
+
 # [1.5.0](https://github.com/petzkod5/petzko.sh/compare/v1.4.1...v1.5.0) (2026-06-19)
 
 
