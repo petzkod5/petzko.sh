@@ -26,7 +26,7 @@ contacts:
     newTab: true
 
   - type: gmail
-    url: petzkod@gmail.com
+    url: dylan@petzko.sh
     description: |
       The direct line. Email me about work, projects, or homebrew recipes.
     click: true
@@ -35,7 +35,7 @@ contacts:
   - type: instagram
     url: instagram.com/dylanpetzko
     description: |
-      Contact me on Instagram! See my adventures.
+      Contact me on Instagram! See my adventures. Or not, I rarely post here.
     click: true
     newTab: true
 
