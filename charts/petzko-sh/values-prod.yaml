@@ -8,6 +8,15 @@ image:
   # commit. (Not touched by semantic-release.)
   tag: "1.3.4"
 
+# The resume-proxy backend only has images from v1.4.0 onward, and the frontend
+# stopped baking the resume PDF in that same release. So backend.enabled must be
+# flipped to true *together with* promoting image.tag to >= 1.4.0 — never before,
+# or prod renders a backend whose image tag doesn't exist (ImagePullBackOff) and
+# the /resume/ route points at a dead service. While prod stays on <= 1.3.x, the
+# baked PDF in that image serves /resume/ via nginx.
+backend:
+  enabled: false
+
 httpRoute:
   hostname: petzko.sh
   listenerName: websecure
