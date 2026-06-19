@@ -31,8 +31,15 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
-{{/* Selector labels. */}}
+{{/* Selector labels (frontend). */}}
 {{- define "petzko-sh.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "petzko-sh.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/* Backend selector labels — a DISTINCT app name so the frontend Service
+     (which selects on name+instance) never matches backend pods. */}}
+{{- define "petzko-sh.backendSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "petzko-sh.name" . }}-backend
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

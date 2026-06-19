@@ -10,12 +10,11 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "petzko-sh.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: backend
+      {{- include "petzko-sh.backendSelectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "petzko-sh.selectorLabels" . | nindent 8 }}
+        {{- include "petzko-sh.backendSelectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: backend
     spec:
       {{- with .Values.imagePullSecrets }}
