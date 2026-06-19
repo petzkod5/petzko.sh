@@ -67,15 +67,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@v0.33.1
-        with:
-          scan-type: fs
-          scanners: vuln,misconfig,secret
-          severity: CRITICAL,HIGH
-          # Findings print to the run log. Report-only for now (exit-code 0) —
-          # flip to '1' to fail CI on a CRITICAL/HIGH once the baseline is clean.
-          # Repo is private, so the GitHub Security tab (SARIF upload) needs
-          # Advanced Security; if it goes public or GHAS is enabled, switch
-          # format to 'sarif' + add github/codeql-action/upload-sarif.
-          format: table
-          exit-code: "0"
+        # Run Trivy from its official image (ghcr) instead of the install-based
+        # action, whose binary download is flaky. Findings print to the run log;
+        # report-only for now — raise --exit-code to 1 to enforce once the
+        # baseline is clean. (Repo is private, so the Security tab / SARIF upload
+        # would need GitHub Advanced Security.)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker run --rm -e GITHUB_TOKEN -v "$GITHUB_WORKSPACE:/repo" \
+            ghcr.io/aquasecurity/trivy:latest fs /repo \
+            --scanners vuln,misconfig,secret \
+            --severity CRITICAL,HIGH \
+            --exit-code 0 --no-progress
