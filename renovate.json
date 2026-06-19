@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "semanticCommits": "enabled",
+  "semanticCommitScope": "deps",
+  "semanticCommitType": "chore",
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "description": "Runtime deps -> fix(deps) so semantic-release cuts a patch",
+      "matchFileNames": ["frontend/package.json"],
+      "matchDepTypes": ["dependencies"],
+      "semanticCommitType": "fix"
+    },
+    {
+      "description": "Dockerfile base image -> fix(deps) so a new image is built+released",
+      "matchManagers": ["dockerfile"],
+      "semanticCommitType": "fix",
+      "automerge": true
+    },
+    {
+      "description": "GitHub Actions -> chore(deps), CI-only, no release",
+      "matchManagers": ["github-actions"],
+      "semanticCommitType": "chore",
+      "automerge": true
+    },
+    {
+      "description": "Automerge low-risk: patch / pin / digest of anything (after CI)",
+      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "automerge": true
+    },
+    {
+      "description": "Automerge devDependencies up to minor (after CI)",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  }
+}
