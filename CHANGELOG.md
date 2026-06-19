@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/petzkod5/petzko.sh/compare/v1.1.0...v1.2.0) (2026-06-19)
+
+
+### Features
+
+* **frontend:** touch-friendly navigation for mobile ([1b78caf](https://github.com/petzkod5/petzko.sh/commit/1b78caf84f1db33370c7dd9dadcdbc31702d8196))
+
 # [1.1.0](https://github.com/petzkod5/petzko.sh/compare/v1.0.0...v1.1.0) (2026-06-19)
 
 
