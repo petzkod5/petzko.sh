@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/petzkod5/petzko.sh/compare/v1.6.1...v1.7.0) (2026-06-19)
+
+
+### Features
+
+* add 'stats' section (coming-soon placeholder) ([9631452](https://github.com/petzkod5/petzko.sh/commit/9631452a945a337f36820a5784cbb6e857f205c8))
+
 ## [1.6.1](https://github.com/petzkod5/petzko.sh/compare/v1.6.0...v1.6.1) (2026-06-19)
 
 

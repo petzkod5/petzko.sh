@@ -5,4 +5,4 @@ type: application
 # Chart version — bump on chart template changes.
 version: 0.1.0
 # Tracks the app; the running image tag is set per-environment in values.
-appVersion: "1.6.1"
+appVersion: "1.7.0"
