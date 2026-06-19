@@ -25,6 +25,10 @@ FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
 
 USER root
 
+# Patch OS packages to the latest alpine security fixes (CVE remediation in the
+# base image — openssl, libxml2, musl, zlib, etc.).
+RUN apk upgrade --no-cache
+
 # Our server config (SPA fallback, gzip, cache + security headers, /healthz).
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
