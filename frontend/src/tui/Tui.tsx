@@ -12,6 +12,7 @@ import { useNavStack, type Layer } from '@/state/useNavStack'
 import { About } from '@/sections/About'
 import { Contact } from '@/sections/Contact'
 import { Portfolio } from '@/sections/Portfolio'
+import { Stats } from '@/sections/Stats'
 import { Breadcrumb } from './Breadcrumb'
 import { Help } from './Help'
 import styles from './Tui.module.css'
@@ -39,6 +40,7 @@ const SECTIONS = [
   { name: 'blog', key: 'b', type: 'log', status: 'ready' },
   { name: 'resume', key: 'r', type: 'document', status: 'ready' },
   { name: 'contact', key: 'c', type: 'links', status: 'ready' },
+  { name: 'stats', key: 's', type: 'metrics', status: 'soon' },
 ] as const
 
 const CONTEXT = [
@@ -372,7 +374,7 @@ export function Tui({ building = false }: TuiProps) {
             onChange={(e) => setCmdValue(e.target.value)}
             onKeyDown={onCmdKey}
             onBlur={closeCmd}
-            placeholder="about · portfolio · blog · resume · contact"
+            placeholder="about · portfolio · blog · resume · contact · stats"
             spellCheck={false}
             autoComplete="off"
             aria-label="Command"
@@ -429,6 +431,8 @@ export function Tui({ building = false }: TuiProps) {
             <Suspense fallback={<p className={styles.placeholder}>loading resume…</p>}>
               <Resume />
             </Suspense>
+          ) : current.id === 'stats' ? (
+            <Stats />
           ) : (
             <p className={styles.placeholder}>
               {current.label} — content coming soon. Press{' '}

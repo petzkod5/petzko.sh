@@ -1,0 +1,147 @@
+/* ── Stats section — "coming soon" placeholder ────────────────────────────── */
+
+.stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 360px;
+  padding: 1rem;
+}
+
+.panel {
+  width: min(460px, 100%);
+  padding: 1.1rem 1.25rem;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.85rem;
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 1px;
+  background: var(--color-accent-amber);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.title {
+  color: var(--color-text-body);
+}
+
+.tag {
+  margin-left: auto;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--color-accent-amber);
+  border: 1px solid var(--color-accent-amber);
+  border-radius: 2px;
+  padding: 0.05rem 0.4rem;
+  opacity: 0.85;
+}
+
+.lead {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.queue {
+  list-style: none;
+  margin: 0 0 1.1rem;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.22rem 0;
+}
+
+.marker {
+  color: var(--color-accent-green);
+}
+
+.label {
+  color: var(--color-text-body);
+}
+
+.pending {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.blink {
+  animation: softblink 1.6s steps(1) infinite;
+}
+
+.cursor {
+  width: 0.5rem;
+  height: 0.95rem;
+  background: var(--color-text-secondary);
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes softblink {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  70.01%,
+  100% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .blink,
+  .cursor {
+    animation: none;
+  }
+}
