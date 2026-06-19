@@ -1,3 +1,11 @@
+## [1.3.1](https://github.com/petzkod5/petzko.sh/compare/v1.3.0...v1.3.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* **security:** patch base-image OS package CVEs ([058dba3](https://github.com/petzkod5/petzko.sh/commit/058dba3d8c1ee3a45e7babe8d3afdd2acd683d61))
+* **security:** read-only root filesystem + seccomp profile ([e84ff9c](https://github.com/petzkod5/petzko.sh/commit/e84ff9cc143660f2143c9e5ca95e5f76538dcf8a))
+
 # [1.3.0](https://github.com/petzkod5/petzko.sh/compare/v1.2.0...v1.3.0) (2026-06-19)
 
 
