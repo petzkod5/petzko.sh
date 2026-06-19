@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/petzkod5/petzko.sh/compare/v1.2.0...v1.3.0) (2026-06-19)
+
+
+### Features
+
+* add favicon from the terminal UI ([3e848d9](https://github.com/petzkod5/petzko.sh/commit/3e848d9097fbe650b3c0d0aea5c14bc107f38fd7))
+* new site description and rich link-preview card ([23cbc1d](https://github.com/petzkod5/petzko.sh/commit/23cbc1dbe5234ce9b07af8d4896abece6d3aac4f))
+
 # [1.2.0](https://github.com/petzkod5/petzko.sh/compare/v1.1.0...v1.2.0) (2026-06-19)
 
 
