@@ -1,0 +1,81 @@
+name: CI
+
+# Validation that must pass before code reaches a release. Runs on PRs and on
+# direct pushes to main (the repo's workflow), so nothing ships unchecked.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Typecheck & build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+
+  chart:
+    name: Helm lint & template
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Lint
+        run: |
+          helm lint charts/petzko-sh -f charts/petzko-sh/values-staging.yaml
+          helm lint charts/petzko-sh -f charts/petzko-sh/values-prod.yaml
+      - name: Template (render both overlays)
+        run: |
+          helm template petzko-sh charts/petzko-sh -f charts/petzko-sh/values-staging.yaml >/dev/null
+          helm template petzko-sh charts/petzko-sh -f charts/petzko-sh/values-prod.yaml >/dev/null
+
+  dockerfile:
+    name: Dockerfile lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: frontend/Dockerfile
+          # Only fail on errors; style warnings are surfaced but non-blocking.
+          failure-threshold: error
+
+  scan:
+    name: Trivy (deps, Dockerfile, manifests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scanners: vuln,misconfig,secret
+          severity: CRITICAL,HIGH
+          # Findings print to the run log. Report-only for now (exit-code 0) —
+          # flip to '1' to fail CI on a CRITICAL/HIGH once the baseline is clean.
+          # Repo is private, so the GitHub Security tab (SARIF upload) needs
+          # Advanced Security; if it goes public or GHAS is enabled, switch
+          # format to 'sarif' + add github/codeql-action/upload-sarif.
+          format: table
+          exit-code: "0"

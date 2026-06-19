@@ -1,0 +1,25 @@
+name: Security rescan
+
+# A CVE disclosed after an image is built won't show up at build time. This
+# re-scans the currently published image weekly so newly-disclosed
+# vulnerabilities surface (in the run log) even with no code changes.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  image-rescan:
+    name: Trivy image rescan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan published image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/petzkod5/petzko-sh:latest
+          severity: CRITICAL,HIGH
+          format: table
+          exit-code: "0"

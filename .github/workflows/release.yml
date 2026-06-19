@@ -69,3 +69,14 @@ jobs:
           tags: |
             ghcr.io/petzkod5/petzko-sh:${{ steps.semantic.outputs.new_release_version }}
             ghcr.io/petzkod5/petzko-sh:latest
+
+      # Scan the freshly published image; findings print to the run log.
+      # Report-only (the release already shipped by this point).
+      - name: Scan released image (Trivy)
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/petzkod5/petzko-sh:${{ steps.semantic.outputs.new_release_version }}
+          severity: CRITICAL,HIGH
+          format: table
+          exit-code: "0"
