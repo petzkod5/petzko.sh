@@ -5,6 +5,8 @@
   "semanticCommitScope": "deps",
   "semanticCommitType": "chore",
   "rangeStrategy": "bump",
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 12,
   "packageRules": [
     {
       "description": "Runtime deps -> fix(deps) so semantic-release cuts a patch",
