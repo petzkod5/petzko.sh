@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import styles from './Resume.module.css'
+import { ResumeLoader } from './ResumeLoader'
 
 // pdf.js worker (bundled by Vite). Runs only when this lazy section loads.
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -42,7 +43,7 @@ export function Resume() {
         file={PDF_URL}
         className={styles.doc}
         onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-        loading={<p className={styles.note}>loading resume…</p>}
+        loading={<ResumeLoader />}
         error={<p className={styles.note}>failed to load resume.</p>}
       >
         {Array.from({ length: numPages }, (_, i) => (
