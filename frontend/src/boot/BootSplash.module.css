@@ -1,20 +1,103 @@
-/* ── Phase 1: Apple IIgs-style boot splash (DESIGN.md §5) ─────────────────────
- * Dithered background, a bordered "Welcome" box with an icon + progress bar.
- * Green-phosphor reskin of the classic IIgs welcome screen.
+/* ── Phase 1: BIOS power-on self-test boot screen (DESIGN.md §5) ──────────────
+ * A fake POST sequence typed out line by line on the green-phosphor CRT: BIOS
+ * banner, memory test, [ OK ] device probes, login, then a blinking prompt that
+ * hands off to the TUI. Minimal — all monospace text + a couple of CRT cues.
  * ────────────────────────────────────────────────────────────────────────── */
 
 .splash {
   position: absolute;
   inset: 0;
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+/* ── Boot log ── */
+.log {
+  margin: 0;
+  padding: 1.2rem 1.4rem;
+  font-family: var(--font-mono);
+  font-size: clamp(0.6rem, 1.5vmin, 0.95rem);
+  line-height: 1.5;
+  color: var(--color-text-body);
+  text-shadow: 0 0 4px var(--crt-glow-soft);
+  white-space: pre;
+}
+
+/* Keep blank lines from collapsing so spacing matches the schedule. */
+.line {
+  min-height: 1.5em;
+}
+
+.ok {
+  color: var(--color-accent-green);
+  font-weight: 600;
+}
+
+.mem {
+  color: var(--color-text-primary);
+}
+
+/* ── Blinking block cursor trailing the last line ── */
+.cursor {
+  display: inline-block;
+  width: 0.6em;
+  background: var(--color-accent-green);
+  box-shadow: 0 0 6px var(--crt-glow);
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ── CRT power-on: a bright line that blooms to fill, then fades ── */
+.powerOn {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: #d8ffe9;
+  transform-origin: center;
+  pointer-events: none;
+  animation: poweron 0.42s ease-out forwards;
+}
+
+@keyframes poweron {
+  0% {
+    transform: scaleY(0.004);
+    opacity: 1;
+  }
+  45% {
+    transform: scaleY(0.012);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+/* ── Stage 2: classic "Welcome" loading card on a dimmed dither bg ──────────
+ * Apple IIgs-style welcome box with a progress bar. The dithered green
+ * background is dimmed a touch so it reads as a quieter second stage. */
+.welcome {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
-  /* fine vertical dither, like the IIgs welcome background */
+  /* fine vertical dither, dimmed from the original IIgs welcome background */
   background: repeating-linear-gradient(
     90deg,
-    #0c5a33 0,
-    #0c5a33 1px,
-    #052c19 1px,
-    #052c19 2px
+    #084026 0,
+    #084026 1px,
+    #04150c 1px,
+    #04150c 2px
   );
 }
 
@@ -30,16 +113,11 @@
     0 0 18px var(--crt-glow-soft);
 }
 
-/* ── Icon column ── */
 .iconCol {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
-}
-
-.icon {
-  filter: drop-shadow(0 0 6px var(--crt-glow-soft));
 }
 
 .disk {
@@ -48,7 +126,6 @@
   color: var(--color-text-secondary);
 }
 
-/* ── Right column ── */
 .right {
   display: flex;
   flex-direction: column;
@@ -56,14 +133,13 @@
   min-width: 12rem;
 }
 
-.welcome {
+.welcomeText {
   margin: 0;
   font-size: 0.98rem;
   color: var(--color-text-primary);
   letter-spacing: 0.02em;
 }
 
-/* ── Progress bar ── */
 .bar {
   height: 13px;
   padding: 1px;
@@ -77,7 +153,16 @@
   background: var(--color-accent-green);
   box-shadow: 0 0 8px var(--crt-glow);
   transform-origin: left;
-  animation: fillbar 5s linear forwards;
+  animation: fillbar 2.1s linear forwards;
+}
+
+@keyframes fillbar {
+  from {
+    transform: scaleX(0.04);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 /* ── Skip affordance ── */
@@ -104,17 +189,12 @@
   outline: none;
 }
 
-@keyframes fillbar {
-  from {
-    transform: scaleX(0.04);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
+  .cursor,
   .fill {
     animation: none;
+  }
+  .powerOn {
+    display: none;
   }
 }
