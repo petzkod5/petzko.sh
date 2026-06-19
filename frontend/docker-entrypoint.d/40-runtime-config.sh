@@ -7,7 +7,9 @@
 set -eu
 
 : "${BUILD_ENV:=prod}"
-conf="/usr/share/nginx/html/config.js"
+# Written to a writable tmpfs (the container root FS is read-only); nginx
+# serves /config.js from here via an alias.
+conf="/tmp/config.js"
 
 printf 'window.__APP_ENV__ = { buildEnv: "%s" };\n' "$BUILD_ENV" > "$conf"
 echo "runtime-config: buildEnv=${BUILD_ENV}"

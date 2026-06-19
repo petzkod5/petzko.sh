@@ -35,8 +35,11 @@ COPY --from=build /app/dist /usr/share/nginx/html
 COPY docker-entrypoint.d/40-runtime-config.sh /docker-entrypoint.d/40-runtime-config.sh
 
 # Make the script executable and let the non-root user (and any OpenShift
-# arbitrary uid in group 0) rewrite config.js at startup.
+# arbitrary uid in group 0) rewrite config.js at startup. Drop the base image's
+# IPv6-listen hook — it tries to edit the (read-only) nginx config at startup
+# and we only listen on IPv4 8080.
 RUN chmod +x /docker-entrypoint.d/40-runtime-config.sh \
+    && rm -f /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh \
     && chown -R 101:0 /usr/share/nginx/html \
     && chmod -R g=u /usr/share/nginx/html
 

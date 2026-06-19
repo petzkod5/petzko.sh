@@ -70,11 +70,14 @@ podSecurityContext:
   runAsUser: 101
   runAsGroup: 101
   fsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
 
 securityContext:
   allowPrivilegeEscalation: false
-  # nginx writes its cache + config.js, so the root FS stays writable.
-  readOnlyRootFilesystem: false
+  # Root FS is read-only; nginx's writable paths (temp + the runtime config.js)
+  # are emptyDir mounts (see deployment.yaml).
+  readOnlyRootFilesystem: true
   capabilities:
     drop:
       - ALL
