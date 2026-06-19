@@ -21,7 +21,7 @@ RUN npm run build
 # ────────────────────────── Stage 2: runtime ─────────────────────────────────
 # Hardened, non-root nginx (runs as uid 101 "nginx", listens on 8080, writes
 # its pid/temp to writable paths — no root, no privileged ports). Alpine-based.
-FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.31-alpine AS runtime
 
 USER root
 
