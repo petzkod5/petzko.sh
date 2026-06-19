@@ -61,6 +61,7 @@ export function Tui({ building = false }: TuiProps) {
   const [cmdValue, setCmdValue] = useState('')
   const { stack, current, atRoot, push, pop, goTo } = useNavStack()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollIdle = useRef<number>()
   const [canScrollDown, setCanScrollDown] = useState(false)
 
   // True when the active pane has more *content* below the fold. The pane's
@@ -76,6 +77,20 @@ export function Tui({ building = false }: TuiProps) {
     const remaining = el.scrollHeight - el.scrollTop - el.clientHeight
     setCanScrollDown(remaining > padBottom + 4)
   }, [])
+
+  // Phosphor persistence: while the pane is moving, smear it (the `.scrolling`
+  // class blurs + lifts brightness); when scrolling stops we drop the class and
+  // the base transition eases it back to sharp — the image "decays" like a CRT.
+  const onScrollPane = useCallback(() => {
+    recomputeScroll()
+    const el = scrollRef.current
+    if (!el) return
+    el.classList.add(styles.scrolling)
+    window.clearTimeout(scrollIdle.current)
+    scrollIdle.current = window.setTimeout(() => {
+      el.classList.remove(styles.scrolling)
+    }, 80)
+  }, [recomputeScroll])
 
   // Recompute on view change, viewport resize, and async content (e.g. the PDF
   // canvas or images) appearing.
@@ -295,7 +310,7 @@ export function Tui({ building = false }: TuiProps) {
           )}
         </span>
 
-        <div className={styles.scroll} ref={scrollRef} onScroll={recomputeScroll}>
+        <div className={styles.scroll} ref={scrollRef} onScroll={onScrollPane}>
           {showHelp ? (
             <Help sections={SECTIONS} />
           ) : atRoot ? (

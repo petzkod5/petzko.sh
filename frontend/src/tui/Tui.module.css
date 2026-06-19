@@ -138,6 +138,15 @@
   overflow: auto;
   /* breathing room around content; extra at the bottom for the chevron */
   padding: 1.25rem 0.5rem 1.7rem;
+  /* phosphor persistence: image decays back to sharp after motion stops */
+  transition: filter 75ms ease-out;
+}
+
+/* Applied (via JS) only while the pane is actively scrolling. Ramps in fast,
+ * then the base .scroll transition eases it back out — the phosphor trail. */
+.scrolling {
+  filter: blur(0.5px) brightness(1.035);
+  transition: filter 45ms linear;
 }
 
 /* Pulsing down-chevron shown when the pane can scroll further.
@@ -181,6 +190,12 @@
   }
   .scrollHint svg {
     animation: none;
+  }
+  .scroll {
+    transition: none;
+  }
+  .scrolling {
+    filter: none;
   }
 }
 
