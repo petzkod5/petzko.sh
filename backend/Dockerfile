@@ -1,7 +1,7 @@
 # ── build ─────────────────────────────────────────────────────────────────────
 # Build natively for the target arch (no QEMU) — the runner is amd64 like the
 # cluster. Stdlib-only, so there's nothing to download.
-FROM --platform=$BUILDPLATFORM golang:1.23-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
 WORKDIR /src
 COPY go.mod ./
 RUN go mod download
