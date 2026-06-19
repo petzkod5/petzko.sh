@@ -1,0 +1,100 @@
+name: Promote to prod
+
+# Manually promote (or roll back) production to a published image version:
+# verifies the tag exists in ghcr, bumps values-prod.yaml, and pushes — ArgoCD
+# then rolls prod. Defaults to whatever staging is currently running, so the
+# common case is "ship what I've already validated on staging".
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to deploy to prod (e.g. 1.3.1). Blank = current staging version."
+        required: false
+        type: string
+      dry_run:
+        description: "Preview only — don't commit/push."
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # commit + push the values-prod bump
+  packages: read # inspect the image in ghcr
+
+concurrency:
+  group: promote-prod
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    # Records a deployment under the 'production' environment. Add a required
+    # reviewer here (Settings → Environments) for an approval gate — note that's
+    # a paid feature on private repos.
+    environment:
+      name: production
+      url: https://petzko.sh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Resolve target version
+        id: ver
+        run: |
+          V="${{ inputs.version }}"
+          if [ -z "$V" ]; then
+            V=$(sed -nE 's/^[[:space:]]*tag:[[:space:]]*"([^"]+)".*/\1/p' charts/petzko-sh/values-staging.yaml | head -1)
+            echo "No version given; defaulting to staging's current version: $V"
+          fi
+          [ -n "$V" ] || { echo "::error::Could not resolve a version"; exit 1; }
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
+      - name: Read current prod version
+        id: cur
+        run: |
+          C=$(sed -nE 's/^[[:space:]]*tag:[[:space:]]*"([^"]+)".*/\1/p' charts/petzko-sh/values-prod.yaml | head -1)
+          echo "current=$C" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify image exists in ghcr
+        run: |
+          REF="ghcr.io/petzkod5/petzko-sh:${{ steps.ver.outputs.version }}"
+          echo "Checking $REF ..."
+          docker buildx imagetools inspect "$REF" >/dev/null \
+            || { echo "::error::Image $REF not found in ghcr — build/release that version first."; exit 1; }
+
+      - name: Bump values-prod and push
+        if: ${{ !inputs.dry_run && steps.cur.outputs.current != steps.ver.outputs.version }}
+        env:
+          V: ${{ steps.ver.outputs.version }}
+        run: |
+          sed -i -E "s/^([[:space:]]*tag:).*/\1 \"$V\"/" charts/petzko-sh/values-prod.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add charts/petzko-sh/values-prod.yaml
+          git commit -m "chore(deploy): promote prod to v$V [skip ci]"
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Summary
+        run: |
+          {
+            echo "### Promote to prod"
+            echo ""
+            echo "| field | value |"
+            echo "|---|---|"
+            echo "| requested version | \`${{ steps.ver.outputs.version }}\` |"
+            echo "| previous prod version | \`${{ steps.cur.outputs.current }}\` |"
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              echo "| action | **dry-run** — no changes pushed |"
+            elif [ "${{ steps.cur.outputs.current }}" = "${{ steps.ver.outputs.version }}" ]; then
+              echo "| action | no-op — prod already on this version |"
+            else
+              echo "| action | bumped \`values-prod.yaml\` + pushed → ArgoCD will roll prod |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
