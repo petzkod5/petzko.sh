@@ -1,0 +1,71 @@
+name: Release
+
+# Cuts a release from conventional commits on main: computes the next version,
+# updates the changelog + version files, tags + publishes a GitHub Release, then
+# builds and pushes the versioned container image.
+on:
+  push:
+    branches: [main]
+
+# Avoid overlapping release runs racing on the git tag / release commit.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write # create tags, push the release commit, create the GitHub Release
+  issues: write # semantic-release may comment on issues/PRs
+  pull-requests: write
+  packages: write # push the image to ghcr.io
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history + tags so semantic-release can determine the version.
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/exec
+            @semantic-release/git
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The remaining steps run only when a new version was actually released.
+      - name: Set up Docker Buildx
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to ghcr.io
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push versioned image
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          # Runner is amd64, matching the cluster — native build, no emulation.
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/petzkod5/petzko-sh:${{ steps.semantic.outputs.new_release_version }}
+            ghcr.io/petzkod5/petzko-sh:latest
