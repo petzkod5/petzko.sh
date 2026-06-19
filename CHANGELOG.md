@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/petzkod5/petzko.sh/compare/v1.3.1...v1.3.2) (2026-06-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency react-icons to ^5.6.0 ([#6](https://github.com/petzkod5/petzko.sh/issues/6)) ([74db0df](https://github.com/petzkod5/petzko.sh/commit/74db0df423d3f539ffc4d57028967455e412c542))
+
 ## [1.3.1](https://github.com/petzkod5/petzko.sh/compare/v1.3.0...v1.3.1) (2026-06-19)
 
 
