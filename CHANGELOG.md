@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/petzkod5/petzko.sh/compare/v1.6.0...v1.6.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency node to v22.23.0 ([#11](https://github.com/petzkod5/petzko.sh/issues/11)) ([02752c5](https://github.com/petzkod5/petzko.sh/commit/02752c5bd5a8ee330151470584af23291eb88600))
+
 # [1.6.0](https://github.com/petzkod5/petzko.sh/compare/v1.5.0...v1.6.0) (2026-06-19)
 
 
