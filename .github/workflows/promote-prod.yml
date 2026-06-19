@@ -62,12 +62,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify image exists in ghcr
+      - name: Verify images exist in ghcr
+        env:
+          V: ${{ steps.ver.outputs.version }}
         run: |
-          REF="ghcr.io/petzkod5/petzko-sh:${{ steps.ver.outputs.version }}"
-          echo "Checking $REF ..."
-          docker buildx imagetools inspect "$REF" >/dev/null \
-            || { echo "::error::Image $REF not found in ghcr — build/release that version first."; exit 1; }
+          for img in petzko-sh petzko-sh-backend; do
+            REF="ghcr.io/petzkod5/$img:$V"
+            echo "Checking $REF ..."
+            docker buildx imagetools inspect "$REF" >/dev/null \
+              || { echo "::error::Image $REF not found in ghcr — build/release that version first."; exit 1; }
+          done
 
       - name: Bump values-prod and push
         if: ${{ !inputs.dry_run && steps.cur.outputs.current != steps.ver.outputs.version }}

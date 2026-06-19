@@ -70,14 +70,32 @@ jobs:
             ghcr.io/petzkod5/petzko-sh:${{ steps.semantic.outputs.new_release_version }}
             ghcr.io/petzkod5/petzko-sh:latest
 
-      # Scan the freshly published image; findings print to the run log.
+      # Build the resume-proxy backend at the same version so the chart can
+      # deploy both images on one tag.
+      - name: Build and push backend image
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/petzkod5/petzko-sh-backend:${{ steps.semantic.outputs.new_release_version }}
+            ghcr.io/petzkod5/petzko-sh-backend:latest
+
+      # Scan the freshly published images; findings print to the run log.
       # Report-only (the release already shipped by this point).
-      - name: Scan released image (Trivy)
+      - name: Scan released images (Trivy)
         if: steps.semantic.outputs.new_release_published == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          V: ${{ steps.semantic.outputs.new_release_version }}
         run: |
-          docker run --rm -e GITHUB_TOKEN \
-            ghcr.io/aquasecurity/trivy:latest image \
-            ghcr.io/petzkod5/petzko-sh:${{ steps.semantic.outputs.new_release_version }} \
-            --severity CRITICAL,HIGH --exit-code 0 --no-progress
+          for img in petzko-sh petzko-sh-backend; do
+            echo "::group::trivy $img:$V"
+            docker run --rm -e GITHUB_TOKEN \
+              ghcr.io/aquasecurity/trivy:latest image \
+              ghcr.io/petzkod5/$img:$V \
+              --severity CRITICAL,HIGH --exit-code 0 --no-progress
+            echo "::endgroup::"
+          done

@@ -15,6 +15,21 @@ spec:
   hostnames:
     - {{ .Values.httpRoute.hostname | quote }}
   rules:
+    {{- if .Values.backend.enabled }}
+    # /resume/* → resume-proxy backend (mirrors the latest resume release).
+    # More specific than the catch-all below, so it wins regardless of order.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /resume/
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ include "petzko-sh.fullname" . }}-backend
+          port: {{ .Values.backend.service.port }}
+          weight: 1
+    {{- end }}
+    # Everything else → static nginx SPA.
     - matches:
         - path:
             type: PathPrefix

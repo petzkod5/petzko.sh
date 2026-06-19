@@ -27,6 +27,44 @@ service:
   port: 80
   targetPort: 8080
 
+# ── Resume-proxy backend ──────────────────────────────────────────────────────
+# Tiny Go service that mirrors the latest release of the public resume repo and
+# serves it same-origin under /resume/ (the browser can't fetch GitHub release
+# assets directly — no CORS). Shares the release version tag with the frontend
+# image (both are built together each release).
+backend:
+  enabled: true
+  image:
+    repository: ghcr.io/petzkod5/petzko-sh-backend
+    # tag is taken from .Values.image.tag (same release version as the frontend).
+  # GitHub repo + release asset names to mirror, and how long to cache each.
+  resumeRepo: petzkod5/resume
+  resumeAssets: resume-dark.pdf,resume-light.pdf
+  cacheTtl: 5m
+  containerPort: 8080
+  service:
+    port: 80
+  resources:
+    requests:
+      cpu: 5m
+      memory: 16Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi
+  # Distroless nonroot (uid 65532); cache is in-memory so the root FS is read-only.
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    runAsGroup: 65532
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
 # ── HTTPRoute (Traefik Gateway API) ──────────────────────────────────────────
 httpRoute:
   enabled: true

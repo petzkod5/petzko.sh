@@ -20,4 +20,22 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  // In prod the resume-proxy backend serves /resume/* (mirroring the latest
+  // resume release). There's no backend in `vite dev`, so proxy those requests
+  // straight to the latest GitHub release asset — same behaviour, no CORS issue
+  // (the dev server proxies server-side).
+  server: {
+    proxy: {
+      '/resume': {
+        target: 'https://github.com',
+        changeOrigin: true,
+        followRedirects: true,
+        rewrite: (path) =>
+          path.replace(
+            /^\/resume/,
+            '/petzkod5/resume/releases/latest/download',
+          ),
+      },
+    },
+  },
 })
