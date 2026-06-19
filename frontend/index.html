@@ -10,6 +10,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
     <meta name="description" content="Dylan Petzko: emotionally unavailable, but the uptime is great." />
+    <link rel="canonical" href="https://petzko.sh/" />
 
     <!-- Open Graph (Slack / iMessage / Discord / Facebook link previews) -->
     <meta property="og:type" content="website" />
@@ -27,6 +28,47 @@
     <meta name="twitter:title" content="petzko.sh" />
     <meta name="twitter:description" content="Dylan Petzko: emotionally unavailable, but the uptime is great." />
     <meta name="twitter:image" content="https://petzko.sh/og-card.png" />
+
+    <!-- Structured data (schema.org): ties the name to the socials for rich
+         Google results / a Knowledge Panel. Lives in the static HTML so crawlers
+         get it without running JS. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Person",
+            "@id": "https://petzko.sh/#person",
+            "name": "Dylan Petzko",
+            "url": "https://petzko.sh",
+            "image": "https://petzko.sh/og-card.png",
+            "jobTitle": "DevOps Engineer",
+            "email": "mailto:dylan@petzko.sh",
+            "sameAs": [
+              "https://github.com/petzkod5",
+              "https://linkedin.com/in/dylan-petzko",
+              "https://instagram.com/dylanpetzko"
+            ],
+            "knowsAbout": [
+              "DevOps",
+              "Platform Engineering",
+              "Kubernetes",
+              "Talos",
+              "GitOps",
+              "Observability"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://petzko.sh/#website",
+            "url": "https://petzko.sh",
+            "name": "petzko.sh",
+            "description": "Dylan Petzko's personal site — a green-phosphor CRT terminal portfolio.",
+            "publisher": { "@id": "https://petzko.sh/#person" }
+          }
+        ]
+      }
+    </script>
 
     <title>petzko.sh</title>
     <!-- Runtime config (window.__APP_ENV__); regenerated per-deploy in the
