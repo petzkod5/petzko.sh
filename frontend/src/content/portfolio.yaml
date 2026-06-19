@@ -1,0 +1,52 @@
+# Portfolio projects rendered on the portfolio page.
+#
+# Each entry:
+#   type        "github" → GitHub icon, tile opens `url` in a new tab.
+#               anything else → no link (e.g. "Work Project", proprietary).
+#   name        project title
+#   url         repository link (github entries)
+#   company     employer (work projects) — "Lockheed Martin" shows the Lockheed
+#               mark; any other company shows a generic info icon
+#   description free text (use a | block for multiple lines)
+portfolio:
+  - type: github
+    name: My Resume
+    url: github.com/petzkod5/resume
+    description: |
+      My resume as code! The exact resume you'll find on this website is built from HTML and LaTeX in this repository.
+
+  - type: github
+    name: Rivendell
+    url: github.com/petzkod5/rivendell-talos-cluster
+    description: |
+      Rivendell - a place of magic. No - it's just my Talos cluster, which can be deployed over and over again using GitOps through ArgoCD. With the use of SOPS + age + Argo + Helmfile, I can redeploy this cluster in less than 20 minutes. Maybe it is magic.
+
+  - type: github
+    name: Bash Stow
+    url: github.com/petzkod5/bash-stow
+    description: |
+      The GNU tool 'stow' is used to symlink files to a fixed destination. It's often used (at least by me) for managing dotfiles and configuration. On isolated or secure systems this tool is often not found. A replacement for it without all of GNU is this! A rewrite of the tool in pure Bash - it's not fast - it's not pretty. But it works.
+
+  - type: github
+    name: JACL - Just Another Config Language
+    url: github.com/petzkod5/just_another_config_language
+    description: |
+      There's no need for another configuration language. But this one is mine. My attempt at lexical analysis and token parsing while learning how programming languages are put together. This language uses full lexing, token parsing, and an abstract syntax tree to make a robust parser for a very, very opinionated configuration language.
+
+  - type: Work Project
+    company: Lockheed Martin
+    name: Aegis Weapon System Test Harness
+    description: |
+      Developed and maintained a custom test harness for mission-critical weapon systems, performing automated regression and integration testing scaling across several customer baselines. Used to detect issues before they are deployed to production customer environments. Test sets maintained exceeded 4500 tests and saved many junior engineers countless hours manually testing against old procedure documents.
+
+  - type: Work Project
+    company: Lockheed Martin
+    name: Aegis Weapon System Developer CLI Tool
+    description: |
+      Developed a CLI tool which helped developers on several customer baseline projects save hours doing repetitive tasks like building, testing, and managing baseline projects. The tool, built in Python, was able to aggregate several other developer tools that were being used into one platform, and was widely recognized and used by developers. Analytics built into the tool showed a userbase of 60% of the developer department, and it saved on average 1-2 hours a day per engineer.
+
+  - type: Work Project
+    company: Lockheed Martin
+    name: Army Command & Control System
+    description: |
+      Led as one of the lead Software Architects for the Army's new Command & Control system meant to overhaul how the Army does digital mission control and how battlefield information is handled. Rooted in AI integration - I lead the platform architecture design and software implementation for the Lockheed Martin Prototype. Establishing best practices in security, devops, and maintainability while reducing costs were just some of my achievements.

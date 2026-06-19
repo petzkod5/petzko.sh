@@ -1,0 +1,86 @@
+/* ── About section — Markdown rendered for the CRT ───────────────────────── */
+
+.about {
+  color: var(--color-text-body);
+  max-width: 60rem;
+}
+
+/* Circular avatar, floated top-left; text wraps around the circle. */
+.avatar {
+  float: left;
+  width: clamp(96px, 18vmin, 152px);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  margin: 0.2rem 1.3rem 0.6rem 0;
+  border-radius: 3px;
+  object-fit: cover;
+  border: 2px solid var(--color-accent-green);
+  box-shadow: 0 0 14px var(--crt-glow-soft);
+}
+
+/* ── Markdown elements ── */
+.about h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.35em;
+  letter-spacing: 0.02em;
+  color: var(--color-text-primary);
+}
+
+.about h2 {
+  margin: 1.1rem 0 0.35rem;
+  font-size: 1.02em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-cyan);
+}
+
+.about p {
+  margin: 0 0 0.75rem;
+}
+
+.about ul,
+.about ol {
+  margin: 0 0 0.75rem;
+  padding-left: 1.3rem;
+}
+
+.about li {
+  margin: 0.12rem 0;
+}
+
+.about li::marker {
+  color: var(--color-accent-green);
+}
+
+.about a {
+  color: var(--color-accent-cyan);
+  text-decoration: underline;
+}
+
+.about strong {
+  color: var(--color-text-primary);
+}
+
+.about code {
+  padding: 0 0.25rem;
+  border-radius: 2px;
+  background: var(--color-bg-elevated);
+  color: var(--color-accent-amber);
+}
+
+.about blockquote {
+  margin: 0.75rem 0;
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+/* Inline images placed anywhere in the Markdown body. */
+.inlineImg {
+  display: block;
+  max-width: min(100%, 420px);
+  margin: 0.5rem 0;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  box-shadow: 0 0 10px var(--crt-glow-soft);
+}

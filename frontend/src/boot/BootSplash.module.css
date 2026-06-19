@@ -1,0 +1,120 @@
+/* ── Phase 1: Apple IIgs-style boot splash (DESIGN.md §5) ─────────────────────
+ * Dithered background, a bordered "Welcome" box with an icon + progress bar.
+ * Green-phosphor reskin of the classic IIgs welcome screen.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.splash {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  /* fine vertical dither, like the IIgs welcome background */
+  background: repeating-linear-gradient(
+    90deg,
+    #0c5a33 0,
+    #0c5a33 1px,
+    #052c19 1px,
+    #052c19 2px
+  );
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.9rem 1.4rem;
+  background: var(--color-bg);
+  border: 2px solid var(--color-text-body);
+  box-shadow:
+    0 0 0 1px #021109,
+    0 0 18px var(--crt-glow-soft);
+}
+
+/* ── Icon column ── */
+.iconCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.icon {
+  filter: drop-shadow(0 0 6px var(--crt-glow-soft));
+}
+
+.disk {
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  color: var(--color-text-secondary);
+}
+
+/* ── Right column ── */
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 12rem;
+}
+
+.welcome {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
+
+/* ── Progress bar ── */
+.bar {
+  height: 13px;
+  padding: 1px;
+  border: 1px solid var(--color-text-secondary);
+  background: #02110a;
+}
+
+.fill {
+  height: 100%;
+  width: 100%;
+  background: var(--color-accent-green);
+  box-shadow: 0 0 8px var(--crt-glow);
+  transform-origin: left;
+  animation: fillbar 5s linear forwards;
+}
+
+/* ── Skip affordance ── */
+.skip {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: color 150ms ease, opacity 150ms ease;
+}
+
+.skip:hover,
+.skip:focus-visible {
+  opacity: 1;
+  color: var(--color-accent-green);
+  outline: none;
+}
+
+@keyframes fillbar {
+  from {
+    transform: scaleX(0.04);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    animation: none;
+  }
+}

@@ -1,0 +1,256 @@
+/* ── Phase 2/3: k9s-style TUI (DESIGN.md §6–§7) ──────────────────────────────
+ * Context block + keymap + ASCII logo header, a titled resource table, and a
+ * coloured status bar. Green-phosphor theme; renders inside the CRT screen.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.tui {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: clamp(0.72rem, 1.4vmin, 0.92rem);
+  line-height: 1.4;
+}
+
+.building {
+  animation: assemble 600ms ease-out;
+}
+
+@keyframes assemble {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+    filter: blur(1px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ── Command line (k9s-style) ── */
+.cmdline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--color-accent-green);
+  border-radius: 2px;
+  background: var(--color-bg-elevated);
+  box-shadow: 0 0 10px var(--crt-glow-soft);
+}
+
+.cmdPrompt {
+  color: var(--color-accent-green);
+}
+
+.cmdInput {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font: inherit;
+  color: var(--color-text-primary);
+  text-shadow: inherit;
+}
+
+.cmdInput::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+/* ── Header ── */
+.top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.context,
+.keys {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.ctxRow {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ctxKey {
+  margin: 0;
+  min-width: 4.5rem;
+  color: var(--color-accent-cyan);
+}
+
+.ctxVal {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.keyRow {
+  white-space: nowrap;
+  color: var(--color-text-body);
+}
+
+.hk {
+  color: var(--color-accent-amber);
+}
+
+.logo {
+  margin: 0;
+  justify-self: end;
+  /* scales up on larger screens, k9s-style */
+  font-size: clamp(0.42rem, 1.7vmin, 1.05rem);
+  line-height: 1;
+  color: var(--color-text-secondary);
+  text-shadow: 0 0 6px var(--crt-glow-soft);
+  white-space: pre;
+}
+
+/* Hide the ASCII mark on small/phone-width screens. */
+@media (max-width: 640px) {
+  .logo {
+    display: none;
+  }
+}
+
+/* ── Resource panel ── */
+.panel {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  /* breathing room around content; extra at the bottom for the chevron */
+  padding: 1.25rem 0.5rem 1.7rem;
+}
+
+/* Pulsing down-chevron shown when the pane can scroll further.
+ * Container handles the fade in/out; the inner svg does the pulse. */
+.scrollHint {
+  position: absolute;
+  bottom: 0.3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  color: var(--color-accent-green);
+  filter: drop-shadow(0 0 6px var(--crt-glow-soft));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 280ms ease;
+}
+
+.scrollHintVisible {
+  opacity: 1;
+}
+
+.scrollHint svg {
+  animation: scroll-hint 1.4s ease-in-out infinite;
+}
+
+@keyframes scroll-hint {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(-2px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollHint {
+    transition: none;
+  }
+  .scrollHint svg {
+    animation: none;
+  }
+}
+
+.panelTitle {
+  position: absolute;
+  z-index: 1;
+  top: -0.72em;
+  left: 1rem;
+  padding: 0 0.4rem;
+  line-height: 1;
+  background: var(--color-bg);
+  color: var(--color-accent-cyan);
+  letter-spacing: 0.02em;
+}
+
+.count {
+  color: var(--color-accent-amber);
+}
+
+/* ── Table ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  padding: 0.15rem 0.7rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+}
+
+.table td {
+  padding: 0.18rem 0.7rem;
+  color: var(--color-text-body);
+}
+
+.row {
+  cursor: pointer;
+}
+
+.rowSel td {
+  background: var(--color-accent-green);
+  color: #02110a;
+  text-shadow: none;
+}
+
+/* ── Section placeholder ── */
+.placeholder {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+/* ── Status bar ── */
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.statusHint {
+  margin-left: auto;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.04em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .building {
+    animation: none;
+  }
+}

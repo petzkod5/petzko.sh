@@ -1,0 +1,31 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  /* the dark "room" the monitor sits in */
+  background: radial-gradient(circle at 50% 40%, #0c0c0c 0%, var(--room-bg) 70%);
+  color: var(--color-text-body);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+#root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(8px, 2vmin, 28px);
+}

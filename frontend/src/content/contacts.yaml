@@ -1,0 +1,46 @@
+# Contact links rendered on the contact page.
+#
+# Each entry:
+#   type        one of: instagram, linkedin, x, facebook, discord, gmail,
+#               github  (anything else renders a generic pen icon)
+#   url         link target — bare domains get https:// automatically;
+#               an email address opens a mail composer
+#   description free text (use a | block for multiple lines)
+#   click       true → clicking the tile (or Enter while selected) opens the url
+#   newTab      true → open in a new tab
+#   copy        true → clicking/Enter copies `url` to the clipboard instead of
+#               opening it (use for handles with no link, e.g. Discord)
+contacts:
+  - type: github
+    url: https://github.com/petzkod5
+    description: |
+      Code, dotfiles, and this very site. Most of what I build lives here.
+    click: true
+    newTab: true
+
+  - type: linkedin
+    url: https://linkedin.com/in/dylan-petzko
+    description: |
+      For professionals — inquire within. I'm open to any and all inquiries!
+    click: true
+    newTab: true
+
+  - type: gmail
+    url: petzkod@gmail.com
+    description: |
+      The direct line. Email me about work, projects, or homebrew recipes.
+    click: true
+    newTab: false
+
+  - type: instagram
+    url: instagram.com/dylanpetzko
+    description: |
+      Contact me on Instagram! See my adventures.
+    click: true
+    newTab: true
+
+  - type: discord
+    url: petzko.
+    description: |
+      Love a good conversation - one of the best ways to chat me up.
+    copy: true

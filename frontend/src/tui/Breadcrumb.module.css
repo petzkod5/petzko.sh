@@ -1,0 +1,22 @@
+/* ── k9s-style breadcrumb layer stack ────────────────────────────────────── */
+
+.crumbs {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.crumb {
+  padding: 0.05rem 0.5rem;
+  color: #02110a;
+  text-shadow: none;
+  border-radius: 1px;
+  /* parent layers — cyan */
+  background: var(--color-accent-cyan);
+}
+
+/* The top-most (current) layer — orange, k9s-style. */
+.active {
+  background: var(--color-accent-amber);
+  box-shadow: 0 0 8px var(--crt-glow-soft);
+}

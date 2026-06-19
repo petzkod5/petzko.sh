@@ -1,0 +1,36 @@
+/* ── k9s-style help overlay ──────────────────────────────────────────────── */
+
+.cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1.5rem 2rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.colTitle {
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-green);
+}
+
+.item {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.key {
+  flex: 0 0 4.5rem;
+  text-align: left;
+  color: var(--color-accent-cyan);
+}
+
+.desc {
+  color: var(--color-text-body);
+}
