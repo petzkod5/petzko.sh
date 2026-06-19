@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/petzkod5/petzko.sh/compare/v1.4.0...v1.4.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* **chart:** give backend a distinct app name so frontend Service doesn't select it ([bcdf80e](https://github.com/petzkod5/petzko.sh/commit/bcdf80ef358dc8626b2c368031d338ff543e3dac))
+
 # [1.4.0](https://github.com/petzkod5/petzko.sh/compare/v1.3.5...v1.4.0) (2026-06-19)
 
 
