@@ -4,8 +4,9 @@
 buildEnv: prod
 
 image:
-  tag: prod
-  pullPolicy: Always
+  # Promoted manually: bump this to the release you want live in prod, then
+  # commit. (Not touched by semantic-release.)
+  tag: "1.1.0"
 
 httpRoute:
   hostname: petzko.sh

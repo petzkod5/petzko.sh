@@ -3,10 +3,9 @@
 buildEnv: staging
 
 image:
-  # Bumped on each staging push (also tagged :staging for convenience).
-  tag: staging
-  # Mutable env tag → always re-pull so a fresh :staging is picked up.
-  pullPolicy: Always
+  # Auto-bumped to the latest release by semantic-release on each release
+  # (see .releaserc.json). Immutable semver tag → no pull policy override needed.
+  tag: "1.1.0"
 
 httpRoute:
   hostname: petzko.home.local

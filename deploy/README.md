@@ -32,14 +32,21 @@ ArgoCD then pulls the chart from this repo, renders the matching value overlay
 
 ## Environments
 
-| Env     | Namespace        | Hostname            | Listener   | Image tag |
-| ------- | ---------------- | ------------------- | ---------- | --------- |
-| staging | `petzko-staging` | `petzko.home.local` | `web`      | `:staging`|
-| prod    | `petzko-prod`    | `petzko.sh`         | `websecure`| `:prod`   |
+| Env     | Namespace        | Hostname            | Listener    | Image tag             |
+| ------- | ---------------- | ------------------- | ----------- | --------------------- |
+| staging | `petzko-staging` | `petzko.home.local` | `web`       | semver, auto-bumped   |
+| prod    | `petzko-prod`    | `petzko.sh`         | `websecure` | semver, pinned manual |
 
-Image tags are mutable; after pushing a rebuilt image with the same tag, restart
-the rollout (ArgoCD won't detect an unchanged tag):
+## Versioning & promotion
 
-```bash
-kubectl rollout restart deploy/petzko-sh-staging -n petzko-staging
-```
+Releases are cut by semantic-release from conventional commits on `main` (see
+`.github/workflows/release.yml`), which publishes an immutable
+`ghcr.io/petzkod5/petzko-sh:<version>` image.
+
+- **Staging** auto-tracks the latest release: each release commits the new
+  version into `charts/petzko-sh/values-staging.yaml` (`image.tag`), and ArgoCD
+  rolls it out.
+- **Prod** is promoted deliberately: bump `image.tag` in
+  `charts/petzko-sh/values-prod.yaml` to the release you want live, then commit.
+  Use a non-releasing commit type (e.g. `chore:`) so the promotion itself does
+  not cut a new version.
