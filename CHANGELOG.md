@@ -1,3 +1,10 @@
+## [1.3.5](https://github.com/petzkod5/petzko.sh/compare/v1.3.4...v1.3.5) (2026-06-19)
+
+
+### Bug Fixes
+
+* **deps:** update remark ([#9](https://github.com/petzkod5/petzko.sh/issues/9)) ([bedd537](https://github.com/petzkod5/petzko.sh/commit/bedd53766fd0a071e481e488bbbb2e2835d60d67))
+
 ## [1.3.4](https://github.com/petzkod5/petzko.sh/compare/v1.3.3...v1.3.4) (2026-06-19)
 
 
