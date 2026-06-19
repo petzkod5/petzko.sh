@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/petzkod5/petzko.sh/compare/v1.7.0...v1.7.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* **deps:** update golang docker tag to v1.26 ([#23](https://github.com/petzkod5/petzko.sh/issues/23)) ([9e4c4c7](https://github.com/petzkod5/petzko.sh/commit/9e4c4c78834b4c29a142d4b632cbd0cdab57c0a4))
+
 # [1.7.0](https://github.com/petzkod5/petzko.sh/compare/v1.6.1...v1.7.0) (2026-06-19)
 
 
