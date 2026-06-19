@@ -1,0 +1,13 @@
+# ── Staging overlay ───────────────────────────────────────────────────────────
+# Internal-only: HTTP via the base Traefik service (.225) on the 'web' listener.
+buildEnv: staging
+
+image:
+  # Bumped on each staging push (also tagged :staging for convenience).
+  tag: staging
+  # Mutable env tag → always re-pull so a fresh :staging is picked up.
+  pullPolicy: Always
+
+httpRoute:
+  hostname: petzko.home.local
+  listenerName: web

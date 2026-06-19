@@ -1,0 +1,84 @@
+# ── petzko-sh base values ─────────────────────────────────────────────────────
+# Shared defaults. Environment overlays (values-staging.yaml / values-prod.yaml)
+# set the image tag, BUILD_ENV label, hostname, and Gateway listener.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/petzkod5/petzko-sh
+  pullPolicy: IfNotPresent
+  # Overridden per environment (and bumped per build).
+  tag: latest
+
+# Public image → no pull secret needed. Add one here if it ever goes private.
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Written into /config.js at container start (shown as "Build:" in the UI).
+buildEnv: dev
+
+# Container listens on 8080 (non-root nginx); Service fronts it on 80.
+containerPort: 8080
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+# ── HTTPRoute (Traefik Gateway API) ──────────────────────────────────────────
+httpRoute:
+  enabled: true
+  # Set per environment.
+  hostname: ""
+  gateway:
+    name: traefik-gateway
+    namespace: traefik
+  # Gateway listener (sectionName): 'web' (HTTP) for staging, 'websecure' (HTTPS)
+  # for prod.
+  listenerName: web
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 3
+  periodSeconds: 10
+
+podAnnotations: {}
+podLabels: {}
+
+# Matches the hardened image (non-root nginx, uid/gid 101).
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+  runAsGroup: 101
+  fsGroup: 101
+
+securityContext:
+  allowPrivilegeEscalation: false
+  # nginx writes its cache + config.js, so the root FS stays writable.
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

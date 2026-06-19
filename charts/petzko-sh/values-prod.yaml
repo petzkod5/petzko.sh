@@ -1,0 +1,12 @@
+# ── Production overlay ─────────────────────────────────────────────────────────
+# Public: HTTPS via the traefik-external service (.226) on the 'websecure'
+# listener, using the petzko.sh wildcard cert already wired into that listener.
+buildEnv: prod
+
+image:
+  tag: prod
+  pullPolicy: Always
+
+httpRoute:
+  hostname: petzko.sh
+  listenerName: websecure

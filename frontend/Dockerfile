@@ -2,7 +2,10 @@
 
 # ─────────────────────────── Stage 1: build ──────────────────────────────────
 # Alpine-based Node for a small, FOSS build image. Pinned to the current LTS.
-FROM node:22-alpine AS build
+# Pinned to the *builder* platform so the bundler runs natively (its output is
+# static, arch-independent assets) — this avoids slow/broken QEMU emulation when
+# cross-building the amd64 runtime image from an arm64 host.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS build
 
 WORKDIR /app
 
