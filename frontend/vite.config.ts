@@ -36,6 +36,12 @@ export default defineConfig({
             '/petzkod5/resume/releases/latest/download',
           ),
       },
+      // In prod the edge Worker serves /api/* (stats / guest log). For local
+      // dev, run `wrangler dev` in ../edge and this proxies to it.
+      '/api': {
+        target: 'http://localhost:8787',
+        changeOrigin: true,
+      },
     },
   },
 })

@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Cloudflare Worker that fronts the stats/guestbook data layer at
+  // petzko.sh/api/*. Runs at the CF edge — intercepts /api/* BEFORE it reaches
+  // the cluster origin; everything else still hits the cluster. Deployed with
+  // wrangler (separate from the ArgoCD flow that owns the Kubernetes cluster).
+  "name": "petzko-edge",
+  "main": "src/index.ts",
+  // Pin to the day this Worker was created; bump deliberately to opt into newer
+  // runtime behavior.
+  "compatibility_date": "2026-06-19",
+
+  // D1 (serverless SQLite) binding — available in the Worker as `env.DB`.
+  // Fill database_id after running:  npx wrangler d1 create petzko-stats
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "petzko-stats",
+      "database_id": "faaa7acd-3841-471c-9518-680e07e7dbed",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Production route: attaches the Worker to /api/* on the petzko.sh zone (your
+  // zone on Cloudflare). `wrangler dev` ignores this and serves locally instead.
+  "routes": [{ "pattern": "petzko.sh/api/*", "zone_name": "petzko.sh" }],
+
+  // Workers Logs — structured logs/traces for debugging the deployed Worker.
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

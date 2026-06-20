@@ -9,12 +9,10 @@
   padding: 1rem;
 }
 
+/* No inner panel/box — content sits directly on the CRT background like the
+   other sections, centered. */
 .panel {
-  width: min(460px, 100%);
-  padding: 1.1rem 1.25rem;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border);
-  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.5);
+  width: min(440px, 100%);
   font-family: var(--font-mono);
   color: var(--color-text-secondary);
 }
@@ -22,17 +20,18 @@
 .header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.55rem;
   font-size: 0.95rem;
   letter-spacing: 0.08em;
-  margin-bottom: 0.85rem;
+  margin-bottom: 1.1rem;
 }
 
 .dot {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 1px;
-  background: var(--color-accent-amber);
+  background: var(--color-accent-green);
   animation: pulse 1.4s ease-in-out infinite;
 }
 
@@ -40,22 +39,41 @@
   color: var(--color-text-body);
 }
 
-.tag {
-  margin-left: auto;
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
-  color: var(--color-accent-amber);
-  border: 1px solid var(--color-accent-amber);
-  border-radius: 2px;
-  padding: 0.05rem 0.4rem;
-  opacity: 0.85;
+/* ── Live readout (Phase 1) ── */
+.readout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0 0 1.1rem;
 }
 
-.lead {
-  margin: 0 0 1rem;
+.stat {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.statLabel {
+  margin: 0;
   font-size: 0.85rem;
-  line-height: 1.5;
+  letter-spacing: 0.04em;
   color: var(--color-text-secondary);
+}
+
+.statValue {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent-green);
+  text-shadow: 0 0 6px var(--crt-glow-soft);
+}
+
+.muted {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
 }
 
 .queue {
@@ -90,6 +108,7 @@
 .footer {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   font-size: 0.85rem;
   color: var(--color-text-secondary);
