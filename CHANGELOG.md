@@ -1,3 +1,11 @@
+# [1.8.0](https://github.com/petzkod5/petzko.sh/compare/v1.7.2...v1.8.0) (2026-06-20)
+
+
+### Features
+
+* guest log — hidden :sign easter egg with terminal REPL modal ([5ac1920](https://github.com/petzkod5/petzko.sh/commit/5ac19206936874a013c77249e0dc28fb3512dadc))
+* live site stats — edge Worker + D1, wired into the stats section ([c43db9c](https://github.com/petzkod5/petzko.sh/commit/c43db9ca7f7056d7bb18750624ff7c2353b705a0))
+
 ## [1.7.2](https://github.com/petzkod5/petzko.sh/compare/v1.7.1...v1.7.2) (2026-06-19)
 
 
