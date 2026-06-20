@@ -13,11 +13,13 @@ Browser ─▶ petzko.sh
 
 ## Endpoints
 
-| Method | Path          | What it does                                          |
-| ------ | ------------- | ----------------------------------------------------- |
-| GET    | `/api/health` | liveness, no DB                                       |
-| GET    | `/api/stats`  | `{ visits, uniques }` — page views + unique visitors  |
-| POST   | `/api/visit`  | bump page views + record the (hashed) unique visitor  |
+| Method | Path             | What it does                                          |
+| ------ | ---------------- | ----------------------------------------------------- |
+| GET    | `/api/health`    | liveness, no DB                                       |
+| GET    | `/api/stats`     | `{ visits, uniques }` — page views + unique visitors  |
+| POST   | `/api/visit`     | bump page views + record the (hashed) unique visitor  |
+| GET    | `/api/guestbook` | recent signed entries (`?limit`, default 12, max 50)  |
+| POST   | `/api/guestbook` | sign an entry `{ name, message }` — rate-limited      |
 
 ## One-time setup
 
@@ -137,6 +139,21 @@ local DB; the remote D1 is untouched.
   and the Worker falls back to a constant — expect `uniques` ≈ 1 in dev. If
   `IP_SALT` is unset it uses an insecure dev fallback (with a logged warning);
   **always set the real secret in production**.
+
+## Guest log (guestbook)
+
+The frontend has a hidden `:sign` command (an easter egg) that opens a modal to
+post an entry. Entries are stored in the `guestbook` table and shown in the Stats
+section's guest log viewer.
+
+- **Auto-approve** — entries go live immediately (`approved = 1`). The viewer
+  only returns `approved = 1` rows, so flipping a row to `0` (or deleting it)
+  hides/removes it. Moderate ad-hoc via the bindings MCP or `wrangler d1 execute`.
+- **Anti-spam (rate-limit first):** name ≤ 40 / message ≤ 280 chars, a coarse
+  profanity guard, and **≤ 3 entries/hour per hashed IP** (same `IP_SALT` hash as
+  uniques — no raw IP stored). Invisible Turnstile is the planned next layer.
+- Messages are stored raw and **escaped on render** (React) — no HTML/markup.
+- `country` is captured from `request.cf.country` (absent in local dev).
 
 ## Notes
 

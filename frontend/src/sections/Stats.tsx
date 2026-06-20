@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchStats, type SiteStats } from '@/api/stats'
+import { GuestLog } from './GuestLog'
 import styles from './Stats.module.css'
-
-// Modules still to come — shown as a teaser beneath the live numbers.
-const QUEUED = ['guest log viewer', 'assorted fun signals']
 
 type LoadState = 'loading' | 'ok' | 'error'
 
@@ -55,22 +53,7 @@ export function Stats() {
           </div>
         </dl>
 
-        <ul className={styles.queue}>
-          {QUEUED.map((item) => (
-            <li key={item} className={styles.item}>
-              <span className={styles.marker} aria-hidden="true">
-                &gt;
-              </span>
-              <span className={styles.label}>{item}</span>
-              <span className={styles.pending}>[ queued ]</span>
-            </li>
-          ))}
-        </ul>
-
-        <div className={styles.footer}>
-          <span className={styles.blink}>more soon</span>
-          <span className={styles.cursor} aria-hidden="true" />
-        </div>
+        <GuestLog />
       </div>
     </div>
   )

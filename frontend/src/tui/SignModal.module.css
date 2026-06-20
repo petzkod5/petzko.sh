@@ -1,0 +1,141 @@
+/* ── Sign modal — terminal-styled guest-log entry REPL ────────────────────── */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.box {
+  width: min(520px, 94vw);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 0 28px var(--crt-glow-soft),
+    inset 0 0 30px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-mono);
+  color: var(--color-text-body);
+}
+
+.title {
+  padding: 0.45rem 0.85rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.body {
+  padding: 0.95rem 0.95rem 0.6rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.intro {
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.prompt {
+  color: var(--color-accent-green);
+}
+
+.field {
+  display: inline-block;
+  min-width: 5.2rem;
+  color: var(--color-text-secondary);
+}
+
+.committed {
+  color: var(--color-text-body);
+  opacity: 0.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.active {
+  display: flex;
+  align-items: baseline;
+  gap: 0.1rem;
+}
+
+/* Terminal-style inline input: no chrome, phosphor caret. */
+.input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font: inherit;
+  caret-color: var(--color-accent-green);
+  text-shadow: 0 0 6px var(--crt-glow-soft);
+}
+
+.confirm {
+  color: var(--color-text-primary);
+}
+
+.status {
+  color: var(--color-text-secondary);
+}
+
+.ok {
+  color: var(--color-accent-green);
+  text-shadow: 0 0 6px var(--crt-glow-soft);
+}
+
+.err {
+  color: var(--color-accent-red);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.9rem;
+  padding: 0.6rem 0.95rem 0.85rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.78rem;
+}
+
+.counter {
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.inlineHint {
+  color: var(--color-accent-amber);
+}
+
+.btn,
+.btnDim {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  color: var(--color-text-body);
+}
+
+.btn:hover {
+  color: var(--color-text-primary);
+}
+
+/* Only the first auto-margin button pushes right; the rest sit next to it. */
+.btnDim {
+  margin-left: 0;
+  color: var(--color-text-secondary);
+}
+
+.btnDim:hover {
+  color: var(--color-text-body);
+}

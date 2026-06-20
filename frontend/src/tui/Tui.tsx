@@ -15,6 +15,8 @@ import { Portfolio } from '@/sections/Portfolio'
 import { Stats } from '@/sections/Stats'
 import { Breadcrumb } from './Breadcrumb'
 import { Help } from './Help'
+import { SignModal } from './SignModal'
+import { SIGNED_EVENT } from '@/api/guestbook'
 import styles from './Tui.module.css'
 
 // pdf.js is heavy — load the resume section only when it's opened.
@@ -59,6 +61,7 @@ const CONTEXT = [
 export function Tui({ building = false }: TuiProps) {
   const [selected, setSelected] = useState(0)
   const [showHelp, setShowHelp] = useState(false)
+  const [showSign, setShowSign] = useState(false)
   const [cmdMode, setCmdMode] = useState(false)
   const [cmdValue, setCmdValue] = useState('')
   const { stack, current, atRoot, push, pop, goTo } = useNavStack()
@@ -198,6 +201,9 @@ export function Tui({ building = false }: TuiProps) {
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return
 
+      // The sign modal owns all keys while open.
+      if (showSign) return
+
       // `:` opens command mode from anywhere.
       if (e.key === ':') {
         e.preventDefault()
@@ -298,13 +304,14 @@ export function Tui({ building = false }: TuiProps) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [showHelp, atRoot, selected, current, enterSection, goBack, toggleCmd])
+  }, [showHelp, showSign, atRoot, selected, current, enterSection, goBack, toggleCmd])
 
   // Run a `:command` — jump to a section, or to the admin (coming soon) page.
   const runCommand = (raw: string) => {
     const v = raw.trim().toLowerCase()
     closeCmd()
     if (!v) return
+    if (v === 'sign') return setShowSign(true) // hidden guest-log easter egg
     const section = SECTIONS.find((s) => s.name === v)
     if (section) jumpTo({ id: section.name, label: section.name })
     else if (v === 'admin') jumpTo({ id: 'admin', label: 'admin' })
@@ -493,6 +500,14 @@ export function Tui({ building = false }: TuiProps) {
           </button>
         )}
       </footer>
+
+      {/* Hidden guest-log entry flow (opened via the `:sign` command). */}
+      {showSign && (
+        <SignModal
+          onClose={() => setShowSign(false)}
+          onSigned={() => window.dispatchEvent(new Event(SIGNED_EVENT))}
+        />
+      )}
     </div>
   )
 }

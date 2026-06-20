@@ -17,7 +17,8 @@ declare global {
 
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
-    const { pathname } = new URL(req.url)
+    const url = new URL(req.url)
+    const pathname = url.pathname
     const method = req.method
 
     try {
@@ -43,6 +44,17 @@ export default {
           recordUnique(env, req),
         ])
         return json({ visits })
+      }
+
+      // Guest log — recent signed entries for the viewer.
+      if (method === 'GET' && pathname === '/api/guestbook') {
+        const entries = await listGuestbook(env, clampLimit(url.searchParams.get('limit')))
+        return json({ entries })
+      }
+
+      // Guest log — sign a new entry (the hidden `:sign` command posts here).
+      if (method === 'POST' && pathname === '/api/guestbook') {
+        return signGuestbook(env, req)
       }
 
       return json({ error: 'not_found' }, 404)
@@ -87,18 +99,111 @@ async function getUniques(env: Env): Promise<number> {
 // stored. Cloudflare sets CF-Connecting-IP at the edge; falls back to a constant
 // for local `wrangler dev` (no real edge), so the path is still exercised.
 async function recordUnique(env: Env, req: Request): Promise<void> {
+  const ipHash = await clientIpHash(env, req)
+  await env.DB.prepare(
+    'INSERT OR IGNORE INTO unique_visitors (ip_hash, first_seen) VALUES (?, ?)',
+  )
+    .bind(ipHash, Date.now())
+    .run()
+}
+
+// Salted hash of the client IP — used for unique counting and guestbook
+// rate-limiting. Raw IP is never persisted.
+async function clientIpHash(env: Env, req: Request): Promise<string> {
   const ip = req.headers.get('CF-Connecting-IP') ?? 'local'
   if (!env.IP_SALT) {
     console.warn(
       JSON.stringify({ level: 'warn', message: 'IP_SALT not set — using dev fallback salt' }),
     )
   }
-  const ipHash = await sha256Hex(`${env.IP_SALT ?? 'dev-insecure-salt'}:${ip}`)
-  await env.DB.prepare(
-    'INSERT OR IGNORE INTO unique_visitors (ip_hash, first_seen) VALUES (?, ?)',
+  return sha256Hex(`${env.IP_SALT ?? 'dev-insecure-salt'}:${ip}`)
+}
+
+// ── Guest log ─────────────────────────────────────────────────────────────────
+
+const NAME_MAX = 40
+const MESSAGE_MAX = 280
+const RATE_LIMIT = 3 // entries…
+const RATE_WINDOW_MS = 60 * 60 * 1000 // …per hour, per hashed IP
+
+interface GuestEntry {
+  id: number
+  name: string
+  message: string
+  country: string | null
+  created_at: number
+}
+
+function clampLimit(raw: string | null): number {
+  const n = Math.floor(Number(raw))
+  if (!Number.isFinite(n) || n <= 0) return 20
+  return Math.min(n, 50)
+}
+
+async function listGuestbook(env: Env, limit: number): Promise<GuestEntry[]> {
+  const { results } = await env.DB.prepare(
+    `SELECT id, name, message, country, created_at
+       FROM guestbook
+      WHERE approved = 1
+      ORDER BY created_at DESC
+      LIMIT ?`,
   )
-    .bind(ipHash, Date.now())
+    .bind(limit)
+    .all<GuestEntry>()
+  return results ?? []
+}
+
+async function signGuestbook(env: Env, req: Request): Promise<Response> {
+  let body: { name?: unknown; message?: unknown }
+  try {
+    body = (await req.json()) as typeof body
+  } catch {
+    return json({ error: 'bad_request' }, 400)
+  }
+
+  const name = typeof body.name === 'string' ? body.name.trim() : ''
+  const message = typeof body.message === 'string' ? body.message.trim() : ''
+  if (!name || name.length > NAME_MAX) return json({ error: 'invalid_name' }, 422)
+  if (!message || message.length > MESSAGE_MAX) return json({ error: 'invalid_message' }, 422)
+  if (isProfane(name) || isProfane(message)) return json({ error: 'rejected' }, 422)
+
+  const ipHash = await clientIpHash(env, req)
+
+  // Rate limit: at most RATE_LIMIT entries per window from one hashed IP.
+  const since = Date.now() - RATE_WINDOW_MS
+  const recent = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM guestbook WHERE ip_hash = ? AND created_at > ?',
+  )
+    .bind(ipHash, since)
+    .first<{ n: number }>()
+  if ((recent?.n ?? 0) >= RATE_LIMIT) return json({ error: 'rate_limited' }, 429)
+
+  const rawCountry = req.cf?.country
+  const country: string | null = typeof rawCountry === 'string' ? rawCountry : null
+  const createdAt = Date.now()
+  const res = await env.DB.prepare(
+    `INSERT INTO guestbook (name, message, country, created_at, approved, ip_hash)
+     VALUES (?, ?, ?, ?, 1, ?)`,
+  )
+    .bind(name, message, country, createdAt, ipHash)
     .run()
+
+  const entry: GuestEntry = {
+    id: Number(res.meta.last_row_id ?? 0),
+    name,
+    message,
+    country,
+    created_at: createdAt,
+  }
+  return json({ entry }, 201)
+}
+
+// Light profanity guard — a coarse safety net, not the primary control (the real
+// control is rate-limiting + manual deletion). Substring match, case-insensitive.
+const PROFANITY = ['fuck', 'shit', 'bitch', 'cunt', 'nigger', 'faggot', 'retard']
+function isProfane(s: string): boolean {
+  const lower = s.toLowerCase()
+  return PROFANITY.some((w) => lower.includes(w))
 }
 
 async function sha256Hex(input: string): Promise<string> {

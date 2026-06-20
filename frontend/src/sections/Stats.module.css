@@ -12,7 +12,7 @@
 /* No inner panel/box — content sits directly on the CRT background like the
    other sections, centered. */
 .panel {
-  width: min(440px, 100%);
+  width: min(560px, 100%);
   font-family: var(--font-mono);
   color: var(--color-text-secondary);
 }
