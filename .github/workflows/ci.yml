@@ -113,7 +113,7 @@ jobs:
       # tarball — no push — then scan it so base-image CVEs are caught pre-merge,
       # not just at release time.
       - name: Build image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.component }}
           platforms: linux/amd64
