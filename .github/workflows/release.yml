@@ -60,7 +60,7 @@ jobs:
 
       - name: Build and push versioned image
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: frontend
           # Runner is amd64, matching the cluster — native build, no emulation.
@@ -74,7 +74,7 @@ jobs:
       # deploy both images on one tag.
       - name: Build and push backend image
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: backend
           platforms: linux/amd64
