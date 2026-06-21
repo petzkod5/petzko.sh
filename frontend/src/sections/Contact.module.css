@@ -33,7 +33,7 @@
 
 .tileSel {
   border-color: var(--color-highlight);
-  background: rgba(61, 255, 143, 0.08);
+  background: color-mix(in srgb, var(--color-highlight) 8%, transparent);
   box-shadow: 0 0 14px var(--crt-glow-soft);
 }
 
