@@ -108,7 +108,7 @@ jobs:
         component: [frontend, backend]
     steps:
       - uses: actions/checkout@v7
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       # Build the real container (validates the Dockerfile builds) to a local
       # tarball — no push — then scan it so base-image CVEs are caught pre-merge,
       # not just at release time.

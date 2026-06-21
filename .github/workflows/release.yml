@@ -48,7 +48,7 @@ jobs:
       # The remaining steps run only when a new version was actually released.
       - name: Set up Docker Buildx
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to ghcr.io
         if: steps.semantic.outputs.new_release_published == 'true'
