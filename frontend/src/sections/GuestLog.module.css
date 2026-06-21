@@ -39,7 +39,7 @@
 }
 
 .marker {
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
 }
 
 .name {
@@ -73,6 +73,6 @@
 }
 
 .cmd {
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
   opacity: 0.9;
 }

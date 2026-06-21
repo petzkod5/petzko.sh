@@ -9,7 +9,7 @@ import {
 } from 'react'
 import { appVersion, buildEnv } from '@/config'
 import { useNavStack, type Layer } from '@/state/useNavStack'
-import { useTheme } from '@/state/useTheme'
+import { useTheme, type Theme } from '@/state/useTheme'
 import { About } from '@/sections/About'
 import { Contact } from '@/sections/Contact'
 import { Portfolio } from '@/sections/Portfolio'
@@ -66,7 +66,7 @@ export function Tui({ building = false }: TuiProps) {
   const [cmdMode, setCmdMode] = useState(false)
   const [cmdValue, setCmdValue] = useState('')
   const { stack, current, atRoot, push, pop, goTo } = useNavStack()
-  const { theme, cycle: cycleTheme } = useTheme()
+  const { cycle: cycleTheme, setTheme, themes } = useTheme()
   const scrollRef = useRef<HTMLDivElement>(null)
   const scrollIdle = useRef<number | undefined>(undefined)
   const [canScrollDown, setCanScrollDown] = useState(false)
@@ -322,6 +322,14 @@ export function Tui({ building = false }: TuiProps) {
     closeCmd()
     if (!v) return
     if (v === 'sign') return setShowSign(true) // hidden guest-log easter egg
+    // `:theme <name>` switches the CRT palette; bare `:theme` cycles; an
+    // unknown name is a no-op (consistent with other unknown commands).
+    const [cmd, arg] = v.split(/\s+/)
+    if (cmd === 'theme') {
+      if (!arg) cycleTheme()
+      else if ((themes as readonly string[]).includes(arg)) setTheme(arg as Theme)
+      return
+    }
     const section = SECTIONS.find((s) => s.name === v)
     if (section) jumpTo({ id: section.name, label: section.name })
     else if (v === 'admin') jumpTo({ id: 'admin', label: 'admin' })
@@ -351,12 +359,6 @@ export function Tui({ building = false }: TuiProps) {
               <dd className={styles.ctxVal}>{v}</dd>
             </div>
           ))}
-          <div className={styles.ctxRow}>
-            <dt className={styles.ctxKey}>Theme:</dt>
-            <dd className={styles.ctxVal}>
-              {theme} <span className={styles.hk}>&lt;t&gt;</span>
-            </dd>
-          </div>
         </dl>
 
         <div className={styles.keys}>
@@ -379,6 +381,16 @@ export function Tui({ building = false }: TuiProps) {
           >
             <span className={styles.hk}>&lt;:&gt;</span> Commands
           </button>
+          <button
+            type="button"
+            className={styles.keyBtn}
+            // Tappable theme cycling for touch users (the `t` key does the same).
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={cycleTheme}
+            aria-label="Cycle theme"
+          >
+            <span className={styles.hk}>&lt;t&gt;</span> Theme
+          </button>
         </div>
 
         <pre className={styles.logo} aria-label="dp">
@@ -397,7 +409,7 @@ export function Tui({ building = false }: TuiProps) {
             onChange={(e) => setCmdValue(e.target.value)}
             onKeyDown={onCmdKey}
             onBlur={closeCmd}
-            placeholder="about · portfolio · blog · resume · contact · stats"
+            placeholder="about · portfolio · blog · resume · contact · stats · theme"
             spellCheck={false}
             autoComplete="off"
             aria-label="Command"

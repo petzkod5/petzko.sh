@@ -38,7 +38,7 @@
 }
 
 .tileSel {
-  border-color: var(--color-accent-green);
+  border-color: var(--color-highlight);
   background: rgba(61, 255, 143, 0.08);
   box-shadow: 0 0 14px var(--crt-glow-soft);
 }
@@ -46,7 +46,7 @@
 .icon {
   font-size: 1.9rem;
   line-height: 1;
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
   filter: drop-shadow(0 0 6px var(--crt-glow-soft));
 }
 

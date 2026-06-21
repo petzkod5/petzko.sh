@@ -76,12 +76,14 @@
     <script src="/config.js"></script>
 
     <!-- Apply the saved CRT theme before first paint so there's no flash of the
-         default palette. Mirrors the values in src/state/useTheme.ts. -->
+         default palette. The theme list lives only in src/state/useTheme.ts
+         (THEMES); this pre-paint script can't import it, so it just applies the
+         stored value (or the green default). An unknown value falls back to the
+         green :root palette in theme.css and is normalised on the first switch. -->
     <script>
       try {
-        var t = localStorage.getItem('petzko:theme')
         document.documentElement.dataset.theme =
-          ['green', 'amber', 'ibm', 'white'].indexOf(t) >= 0 ? t : 'green'
+          localStorage.getItem('petzko:theme') || 'green'
       } catch (e) {
         document.documentElement.dataset.theme = 'green'
       }

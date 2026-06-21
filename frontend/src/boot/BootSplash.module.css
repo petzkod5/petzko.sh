@@ -30,7 +30,7 @@
 }
 
 .ok {
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
   font-weight: 600;
 }
 
@@ -42,7 +42,7 @@
 .cursor {
   display: inline-block;
   width: 0.6em;
-  background: var(--color-accent-green);
+  background: var(--color-highlight);
   box-shadow: 0 0 6px var(--crt-glow);
   animation: blink 1s steps(1) infinite;
 }
@@ -151,7 +151,7 @@
 .fill {
   height: 100%;
   width: 100%;
-  background: var(--color-accent-green);
+  background: var(--color-highlight);
   box-shadow: 0 0 8px var(--crt-glow);
   transform-origin: left;
   animation: fillbar 2.1s linear forwards;
@@ -186,7 +186,7 @@
 .skip:hover,
 .skip:focus-visible {
   opacity: 1;
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
   outline: none;
 }
 
