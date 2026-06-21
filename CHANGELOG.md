@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/petzkod5/petzko.sh/compare/v1.11.0...v1.11.1) (2026-06-21)
+
+
+### Bug Fixes
+
+* **frontend:** tint the resume PDF to the active theme ([83c1d21](https://github.com/petzkod5/petzko.sh/commit/83c1d21edf81497733d320149fd99e7867aabfbc))
+
 # [1.11.0](https://github.com/petzkod5/petzko.sh/compare/v1.10.1...v1.11.0) (2026-06-21)
 
 
