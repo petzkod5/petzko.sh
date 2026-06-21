@@ -32,7 +32,7 @@
 }
 
 .tileSel {
-  border-color: var(--color-accent-green);
+  border-color: var(--color-highlight);
   background: rgba(61, 255, 143, 0.08);
   box-shadow: 0 0 14px var(--crt-glow-soft);
 }
@@ -41,7 +41,7 @@
   flex: 0 0 auto;
   font-size: 2.1rem;
   line-height: 1;
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
   filter: drop-shadow(0 0 6px var(--crt-glow-soft));
 }
 

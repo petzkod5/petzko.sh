@@ -14,7 +14,7 @@
   margin: 0.2rem 1.3rem 0.6rem 0;
   border-radius: 3px;
   object-fit: cover;
-  border: 2px solid var(--color-accent-green);
+  border: 2px solid var(--color-highlight);
   box-shadow: 0 0 14px var(--crt-glow-soft);
 }
 
@@ -49,7 +49,7 @@
 }
 
 .about li::marker {
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
 }
 
 .about a {

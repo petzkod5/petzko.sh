@@ -35,14 +35,14 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem 0.6rem;
-  border: 1px solid var(--color-accent-green);
+  border: 1px solid var(--color-highlight);
   border-radius: 2px;
   background: var(--color-bg-elevated);
   box-shadow: 0 0 10px var(--crt-glow-soft);
 }
 
 .cmdPrompt {
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
 }
 
 .cmdInput {
@@ -179,7 +179,7 @@
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
   filter: drop-shadow(0 0 6px var(--crt-glow-soft));
   pointer-events: none;
   opacity: 0;
@@ -262,7 +262,7 @@
 }
 
 .rowSel td {
-  background: var(--color-accent-green);
+  background: var(--color-highlight);
   color: var(--color-bg);
   text-shadow: none;
 }

@@ -78,7 +78,7 @@
 }
 
 .prompt {
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
 }
 
 .stage::after {

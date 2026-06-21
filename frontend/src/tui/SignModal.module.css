@@ -43,7 +43,7 @@
 }
 
 .prompt {
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
 }
 
 .field {
@@ -74,7 +74,7 @@
   outline: none;
   color: var(--color-text-primary);
   font: inherit;
-  caret-color: var(--color-accent-green);
+  caret-color: var(--color-highlight);
   text-shadow: 0 0 6px var(--crt-glow-soft);
 }
 
@@ -87,7 +87,7 @@
 }
 
 .ok {
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
   text-shadow: 0 0 6px var(--crt-glow-soft);
 }
 

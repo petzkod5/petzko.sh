@@ -17,7 +17,7 @@
   margin-bottom: 0.35rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--color-accent-green);
+  color: var(--color-highlight);
 }
 
 .item {
