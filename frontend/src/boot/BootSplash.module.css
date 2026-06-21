@@ -63,7 +63,7 @@
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: #d8ffe9;
+  background: var(--boot-flash);
   transform-origin: center;
   pointer-events: none;
   animation: poweron 0.42s ease-out forwards;
@@ -92,13 +92,13 @@
   inset: 0;
   display: grid;
   place-items: center;
-  /* fine vertical dither, dimmed from the original IIgs welcome background */
+  /* fine vertical dither, themed to the active palette (was a fixed green) */
   background: repeating-linear-gradient(
     90deg,
-    #084026 0,
-    #084026 1px,
-    #04150c 1px,
-    #04150c 2px
+    var(--boot-dither-a) 0,
+    var(--boot-dither-a) 1px,
+    var(--boot-dither-b) 1px,
+    var(--boot-dither-b) 2px
   );
 }
 
@@ -110,7 +110,7 @@
   background: var(--color-bg);
   border: 2px solid var(--color-text-body);
   box-shadow:
-    0 0 0 1px #021109,
+    0 0 0 1px var(--color-bg),
     0 0 18px var(--crt-glow-soft);
 }
 
