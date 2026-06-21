@@ -263,7 +263,7 @@
 
 .rowSel td {
   background: var(--color-accent-green);
-  color: #02110a;
+  color: var(--color-bg);
   text-shadow: none;
 }
 

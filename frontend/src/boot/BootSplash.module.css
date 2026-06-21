@@ -145,7 +145,7 @@
   height: 13px;
   padding: 1px;
   border: 1px solid var(--color-text-secondary);
-  background: #02110a;
+  background: var(--color-bg);
 }
 
 .fill {
