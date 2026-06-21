@@ -322,11 +322,12 @@ export function Tui({ building = false }: TuiProps) {
     closeCmd()
     if (!v) return
     if (v === 'sign') return setShowSign(true) // hidden guest-log easter egg
-    // `:theme <name>` switches the CRT palette; bare `:theme` cycles.
+    // `:theme <name>` switches the CRT palette; bare `:theme` cycles; an
+    // unknown name is a no-op (consistent with other unknown commands).
     const [cmd, arg] = v.split(/\s+/)
     if (cmd === 'theme') {
-      if (arg && (themes as readonly string[]).includes(arg)) setTheme(arg as Theme)
-      else cycleTheme()
+      if (!arg) cycleTheme()
+      else if ((themes as readonly string[]).includes(arg)) setTheme(arg as Theme)
       return
     }
     const section = SECTIONS.find((s) => s.name === v)
