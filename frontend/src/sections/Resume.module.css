@@ -23,9 +23,12 @@
 }
 
 .page {
-  /* Push the dark PDF toward a dim phosphor green that matches the rest of the
-     UI (not neon); the global CRT overlays add scanlines / glow / vignette. */
-  filter: grayscale(1) sepia(1) hue-rotate(80deg) saturate(2) brightness(0.62);
+  /* Push the dark PDF toward a dim phosphor tint that matches the active theme
+     (green / amber / azure / neutral). The hue + saturation are theme vars, so
+     the resume re-tints with the rest of the UI; the global CRT overlays add
+     scanlines / glow / vignette on top. */
+  filter: grayscale(1) sepia(1) hue-rotate(var(--resume-hue))
+    saturate(var(--resume-saturate)) brightness(0.62);
   border: 1px solid var(--color-border);
   box-shadow: 0 0 16px var(--crt-glow-soft);
 }
