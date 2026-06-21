@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { appVersion, buildEnv } from '@/config'
 import { useNavStack, type Layer } from '@/state/useNavStack'
+import { useTheme } from '@/state/useTheme'
 import { About } from '@/sections/About'
 import { Contact } from '@/sections/Contact'
 import { Portfolio } from '@/sections/Portfolio'
@@ -65,6 +66,7 @@ export function Tui({ building = false }: TuiProps) {
   const [cmdMode, setCmdMode] = useState(false)
   const [cmdValue, setCmdValue] = useState('')
   const { stack, current, atRoot, push, pop, goTo } = useNavStack()
+  const { theme, cycle: cycleTheme } = useTheme()
   const scrollRef = useRef<HTMLDivElement>(null)
   const scrollIdle = useRef<number | undefined>(undefined)
   const [canScrollDown, setCanScrollDown] = useState(false)
@@ -215,6 +217,14 @@ export function Tui({ building = false }: TuiProps) {
         setShowHelp((h) => !h)
         return
       }
+      // `t` cycles the CRT colour theme from anywhere (green → amber → ibm →
+      // white → …). Safe globally: it's not a section shortcut, and typing in a
+      // field is already excluded above.
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault()
+        cycleTheme()
+        return
+      }
       if (showHelp) {
         if (e.key === 'Escape') {
           e.preventDefault()
@@ -304,7 +314,7 @@ export function Tui({ building = false }: TuiProps) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [showHelp, showSign, atRoot, selected, current, enterSection, goBack, toggleCmd])
+  }, [showHelp, showSign, atRoot, selected, current, enterSection, goBack, toggleCmd, cycleTheme])
 
   // Run a `:command` — jump to a section, or to the admin (coming soon) page.
   const runCommand = (raw: string) => {
@@ -341,6 +351,12 @@ export function Tui({ building = false }: TuiProps) {
               <dd className={styles.ctxVal}>{v}</dd>
             </div>
           ))}
+          <div className={styles.ctxRow}>
+            <dt className={styles.ctxKey}>Theme:</dt>
+            <dd className={styles.ctxVal}>
+              {theme} <span className={styles.hk}>&lt;t&gt;</span>
+            </dd>
+          </div>
         </dl>
 
         <div className={styles.keys}>

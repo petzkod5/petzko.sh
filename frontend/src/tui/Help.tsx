@@ -20,6 +20,7 @@ const NAVIGATION: Binding[] = [
 const GENERAL: Binding[] = [
   { keys: ':', desc: 'Command' },
   { keys: '?', desc: 'Help' },
+  { keys: 't', desc: 'Theme' },
   { keys: 'esc', desc: 'Back' },
 ]
 
