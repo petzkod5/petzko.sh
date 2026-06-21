@@ -1,3 +1,12 @@
+## [1.10.1](https://github.com/petzkod5/petzko.sh/compare/v1.10.0...v1.10.1) (2026-06-21)
+
+
+### Bug Fixes
+
+* **frontend:** meet AA contrast for amber/ibm secondary text ([c9ec3ef](https://github.com/petzkod5/petzko.sh/commit/c9ec3ef1a0532b888be948aaf250609e3f63ba2b)), closes [#b9742a](https://github.com/petzkod5/petzko.sh/issues/b9742a) [#3a8ad0](https://github.com/petzkod5/petzko.sh/issues/3a8ad0)
+* **frontend:** no-op on unknown :theme name ([c90057d](https://github.com/petzkod5/petzko.sh/commit/c90057d2fbfd4a1add98b415c935555769549536))
+* **frontend:** theme command, header hotkey, drop metadata row ([5a44c5c](https://github.com/petzkod5/petzko.sh/commit/5a44c5c7561a302031d6444acb4a865ffa2983eb))
+
 # [1.10.0](https://github.com/petzkod5/petzko.sh/compare/v1.9.0...v1.10.0) (2026-06-21)
 
 
