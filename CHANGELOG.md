@@ -1,3 +1,10 @@
+## [1.11.3](https://github.com/petzkod5/petzko.sh/compare/v1.11.2...v1.11.3) (2026-06-21)
+
+
+### Bug Fixes
+
+* **frontend:** theme the selected-tile background wash ([1ab31dc](https://github.com/petzkod5/petzko.sh/commit/1ab31dc20a2c9819679e922009b8dcf3865e2e79))
+
 ## [1.11.2](https://github.com/petzkod5/petzko.sh/compare/v1.11.1...v1.11.2) (2026-06-21)
 
 
