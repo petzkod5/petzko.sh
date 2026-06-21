@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/petzkod5/petzko.sh/compare/v1.8.0...v1.9.0) (2026-06-21)
+
+
+### Features
+
+* **frontend:** authentic retro terminal fonts (Px437 BIOS + VT323 TUI) ([cf0ab76](https://github.com/petzkod5/petzko.sh/commit/cf0ab76d1d37100d3891a6135b85ded050199620))
+
 # [1.8.0](https://github.com/petzkod5/petzko.sh/compare/v1.7.2...v1.8.0) (2026-06-20)
 
 
