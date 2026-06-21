@@ -7,6 +7,31 @@
  * theme stays centralised and tweakable (DESIGN.md §9).
  * ────────────────────────────────────────────────────────────────────────── */
 
+/* ── Retro terminal fonts (self-hosted, no external CDN at runtime) ──────────
+ * Px437 IBM VGA 8x16 — a pixel-perfect outline of the real IBM VGA text-mode
+ * ROM font; used only on the BIOS power-on screen for peak authenticity.
+ * VT323 — a DEC VT320-derived phosphor terminal face; the live TUI runs on it.
+ * size-adjust nudges VT323 up so it reads at the same visual size as the
+ * modern monospace fallbacks, keeping every clamp()/rem in the app unchanged.
+ * Licences/attribution: see public/fonts/ATTRIBUTION.md.
+ * ────────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Px437 IBM VGA 8x16';
+  src: url('/fonts/Px437_IBM_VGA_8x16.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'VT323';
+  src: url('/fonts/VT323-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 112%;
+}
+
 :root {
   /* ── The dark "room" behind the monitor ── */
   --room-bg: #060606;
@@ -35,8 +60,11 @@
   --crt-glow-soft: rgba(61, 255, 143, 0.18);
 
   /* ── Typography ── */
-  --font-mono: ui-monospace, 'JetBrains Mono', 'SF Mono', 'IBM Plex Mono',
-    Menlo, Consolas, monospace;
+  /* Live TUI: VT323 phosphor terminal face, modern monos as fallback. */
+  --font-mono: 'VT323', ui-monospace, 'JetBrains Mono', 'SF Mono',
+    'IBM Plex Mono', Menlo, Consolas, monospace;
+  /* BIOS power-on screen: authentic IBM VGA text-mode ROM font. */
+  --font-bios: 'Px437 IBM VGA 8x16', var(--font-mono);
 
   /* ── Motion ── */
   --boot-min-ms: 5000;

@@ -15,8 +15,9 @@
 .log {
   margin: 0;
   padding: 1.2rem 1.4rem;
-  font-family: var(--font-mono);
-  font-size: clamp(0.6rem, 1.5vmin, 0.95rem);
+  /* Authentic IBM VGA 8x16 ROM font — sharpest at 16px / integer multiples. */
+  font-family: var(--font-bios);
+  font-size: clamp(0.7rem, 1.6vmin, 1rem);
   line-height: 1.5;
   color: var(--color-text-body);
   text-shadow: 0 0 4px var(--crt-glow-soft);
