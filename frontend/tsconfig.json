@@ -20,8 +20,9 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    /* Path alias — mirrors vite.config.ts */
-    "baseUrl": ".",
+    /* Path alias — mirrors vite.config.ts. Relative paths resolve against this
+       tsconfig's directory, so no baseUrl is needed (baseUrl is deprecated in
+       TS 6 and removed in TS 7). */
     "paths": {
       "@/*": ["./src/*"]
     }

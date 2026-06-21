@@ -32,7 +32,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: 22.23.0
+          node-version: 24.17.0
 
       - name: Semantic Release
         id: semantic
@@ -48,7 +48,7 @@ jobs:
       # The remaining steps run only when a new version was actually released.
       - name: Set up Docker Buildx
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to ghcr.io
         if: steps.semantic.outputs.new_release_published == 'true'

@@ -9,7 +9,7 @@ import { useEffect, useRef, useState, type RefObject } from 'react'
  */
 export function useGridNav(
   count: number,
-  gridRef: RefObject<HTMLElement>,
+  gridRef: RefObject<HTMLElement | null>,
   onActivate: (index: number) => void,
 ) {
   const [sel, setSel] = useState(0)

@@ -75,7 +75,7 @@ export function BootSplash({ onSkip }: BootSplashProps) {
   const [mem, setMem] = useState(prefersReduced ? MEM_TARGET : 0)
   const [memDone, setMemDone] = useState(prefersReduced)
   const [showSkip, setShowSkip] = useState(false)
-  const rafRef = useRef<number>()
+  const rafRef = useRef<number | undefined>(undefined)
 
   // Reveal each POST line on its cumulative schedule; animate the memory
   // counter when its line appears; then hand off to the welcome card.

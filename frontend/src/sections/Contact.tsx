@@ -67,7 +67,7 @@ function openItem(item: ContactItem): void {
 export function Contact() {
   const [copied, setCopied] = useState<number | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
-  const copyTimer = useRef<number>()
+  const copyTimer = useRef<number | undefined>(undefined)
 
   // Open a link, or copy the value for handle-only contacts (copy: true).
   const activate = (index: number) => {
