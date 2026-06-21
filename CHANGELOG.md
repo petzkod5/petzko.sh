@@ -1,3 +1,15 @@
+# [1.10.0](https://github.com/petzkod5/petzko.sh/compare/v1.9.0...v1.10.0) (2026-06-21)
+
+
+### Bug Fixes
+
+* **frontend:** theme the primary highlight colour (row selection) ([f08ab42](https://github.com/petzkod5/petzko.sh/commit/f08ab4270842f369d9f2e0031a926cf2ddda4223))
+
+
+### Features
+
+* **frontend:** CRT theme switcher (green / amber / ibm blue / white) ([936a4f4](https://github.com/petzkod5/petzko.sh/commit/936a4f456ac0a8e4ac0c7c15e00de56478f2d608))
+
 # [1.9.0](https://github.com/petzkod5/petzko.sh/compare/v1.8.0...v1.9.0) (2026-06-21)
 
 
