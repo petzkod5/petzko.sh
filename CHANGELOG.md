@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/petzkod5/petzko.sh/compare/v1.11.1...v1.11.2) (2026-06-21)
+
+
+### Bug Fixes
+
+* **frontend:** theme the boot welcome screen background ([36d7f27](https://github.com/petzkod5/petzko.sh/commit/36d7f275304ca4ab77b7c2ae8c1687aa2e583eb6))
+
 ## [1.11.1](https://github.com/petzkod5/petzko.sh/compare/v1.11.0...v1.11.1) (2026-06-21)
 
 
