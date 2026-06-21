@@ -86,7 +86,7 @@
   --color-bg-elevated: #1b0f03;
   --color-text-primary: #ffe9c2;
   --color-text-body: #ffb000;
-  --color-text-secondary: #9c5f16;
+  --color-text-secondary: #b9742a; /* AA on --color-bg (was #9c5f16, 3.8:1) */
   --color-accent-green: #ffc738; /* bright amber highlight */
   --color-border: #573413;
   --crt-glow: rgba(255, 176, 0, 0.42);
@@ -102,7 +102,7 @@
   --color-bg-elevated: #06182a;
   --color-text-primary: #d6ecff;
   --color-text-body: #4ea8ff;
-  --color-text-secondary: #2364a3;
+  --color-text-secondary: #3a8ad0; /* AA on --color-bg (was #2364a3, 3.1:1) */
   --color-accent-green: #6fc3ff; /* bright azure highlight */
   --color-border: #154a78;
   --crt-glow: rgba(78, 168, 255, 0.42);
