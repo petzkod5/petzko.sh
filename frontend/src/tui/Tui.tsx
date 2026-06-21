@@ -66,7 +66,7 @@ export function Tui({ building = false }: TuiProps) {
   const [cmdValue, setCmdValue] = useState('')
   const { stack, current, atRoot, push, pop, goTo } = useNavStack()
   const scrollRef = useRef<HTMLDivElement>(null)
-  const scrollIdle = useRef<number>()
+  const scrollIdle = useRef<number | undefined>(undefined)
   const [canScrollDown, setCanScrollDown] = useState(false)
 
   // Mirror the latest overlay/nav state so the once-registered popstate
