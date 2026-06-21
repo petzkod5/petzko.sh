@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/petzkod5/petzko.sh/compare/v1.10.1...v1.11.0) (2026-06-21)
+
+
+### Features
+
+* **frontend:** degauss flicker transition on theme change ([9f8443d](https://github.com/petzkod5/petzko.sh/commit/9f8443d0d2e80fb4c3c9f02b1f1c0a1704f2b64e))
+
 ## [1.10.1](https://github.com/petzkod5/petzko.sh/compare/v1.10.0...v1.10.1) (2026-06-21)
 
 
