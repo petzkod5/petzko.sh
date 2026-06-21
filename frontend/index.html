@@ -74,6 +74,18 @@
     <!-- Runtime config (window.__APP_ENV__); regenerated per-deploy in the
          container. Loads before the app bundle. -->
     <script src="/config.js"></script>
+
+    <!-- Apply the saved CRT theme before first paint so there's no flash of the
+         default palette. Mirrors the values in src/state/useTheme.ts. -->
+    <script>
+      try {
+        var t = localStorage.getItem('petzko:theme')
+        document.documentElement.dataset.theme =
+          ['green', 'amber', 'ibm', 'white'].indexOf(t) >= 0 ? t : 'green'
+      } catch (e) {
+        document.documentElement.dataset.theme = 'green'
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

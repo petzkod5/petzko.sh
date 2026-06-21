@@ -8,7 +8,7 @@
 
 .crumb {
   padding: 0.05rem 0.5rem;
-  color: #02110a;
+  color: var(--color-bg);
   text-shadow: none;
   border-radius: 1px;
   /* parent layers — cyan */

@@ -29,9 +29,9 @@
   border: 2px solid #060807;
   background: radial-gradient(
     ellipse at center,
-    #053a22 0%,
+    var(--crt-screen-tint) 0%,
     var(--color-bg) 58%,
-    #010905 100%
+    var(--crt-screen-edge) 100%
   );
   box-shadow:
     inset 0 0 70px rgba(0, 0, 0, 0.9),
@@ -62,7 +62,7 @@
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(61, 255, 143, 0.05),
+    color-mix(in srgb, var(--crt-glow) 11%, transparent),
     transparent
   );
   animation: sweep 7s linear infinite;
@@ -90,9 +90,9 @@
   inset: 0;
   z-index: 4;
   pointer-events: none;
-  /* Plain translucent green pulse — no mix-blend-mode, which caused stale
+  /* Plain translucent phosphor pulse — no mix-blend-mode, which caused stale
      backdrop repaints (ghost tiles) when content changed beneath it. */
-  background: rgba(61, 255, 143, 0.7);
+  background: var(--crt-glow);
   opacity: 0.03;
   animation: flicker 110ms steps(2) infinite;
 }
