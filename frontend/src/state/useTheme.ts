@@ -1,12 +1,19 @@
 import { useCallback, useState } from 'react'
 
 /**
- * CRT colour themes. Each is a base-phosphor palette (green / amber / IBM blue /
- * white); the k9s accent set is shared across all of them (see theme.css).
- * `green` is the default.
+ * The canonical list of CRT colour themes — the single source of truth for
+ * theme ids. Each is a base-phosphor palette (green / amber / IBM blue / white)
+ * defined in theme.css; the shared k9s accent set rides on top. Add a theme
+ * here (and a matching [data-theme] block in theme.css) and everything else —
+ * cycling, the `:theme` command, validation — follows automatically. (The
+ * pre-paint script in index.html can't import this, so it just applies the
+ * stored value and lets the app normalise anything unknown.)
  */
 export const THEMES = ['green', 'amber', 'ibm', 'white'] as const
 export type Theme = (typeof THEMES)[number]
+
+/** Palette used when nothing valid is stored. */
+export const DEFAULT_THEME: Theme = 'green'
 
 const STORAGE_KEY = 'petzko:theme'
 
@@ -18,7 +25,7 @@ function isTheme(v: unknown): v is Theme {
  * before first paint by the inline script in index.html). */
 function current(): Theme {
   const t = document.documentElement.dataset.theme
-  return isTheme(t) ? t : 'green'
+  return isTheme(t) ? t : DEFAULT_THEME
 }
 
 /**
