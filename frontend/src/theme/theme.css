@@ -79,6 +79,9 @@
   --crt-screen-edge: #010905; /* dark outer falloff of the screen gradient  */
   --resume-hue: 80deg; /* hue-rotate applied to the dark resume PDF render   */
   --resume-saturate: 2;
+  --boot-dither-a: #084026; /* welcome-card dither — lighter stripe          */
+  --boot-dither-b: #04150c; /* welcome-card dither — darker stripe           */
+  --boot-flash: #d8ffe9; /* CRT power-on bloom                               */
 }
 
 /* Amber — P3 amber-phosphor monitor. */
@@ -97,6 +100,9 @@
   --crt-screen-edge: #0a0500;
   --resume-hue: 0deg; /* sepia base already reads amber */
   --resume-saturate: 2;
+  --boot-dither-a: #402608;
+  --boot-dither-b: #150c04;
+  --boot-flash: #fff0d8;
 }
 
 /* IBM blue — blue/azure-phosphor monitor. */
@@ -115,6 +121,9 @@
   --crt-screen-edge: #00060f;
   --resume-hue: 170deg; /* rotate the sepia base toward azure */
   --resume-saturate: 2;
+  --boot-dither-a: #082640;
+  --boot-dither-b: #040c15;
+  --boot-flash: #d8ecff;
 }
 
 /* White — P4 white/grey-phosphor monitor (doubles as a high-contrast mode). */
@@ -133,4 +142,7 @@
   --crt-screen-edge: #050506;
   --resume-hue: 0deg; /* no tint — drop saturation for a neutral grey render */
   --resume-saturate: 0;
+  --boot-dither-a: #2a2a30;
+  --boot-dither-b: #0c0c0d;
+  --boot-flash: #f0f0f5;
 }
