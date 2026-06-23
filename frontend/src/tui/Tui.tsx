@@ -11,7 +11,7 @@ import { appVersion, buildEnv } from '@/config'
 import { useNavStack, type Layer } from '@/state/useNavStack'
 import { useTheme, type Theme } from '@/state/useTheme'
 import { About } from '@/sections/About'
-import { AdminPanel } from '@/sections/AdminPanel'
+import { AdminOverlay } from '@/admin/AdminOverlay'
 import { Contact } from '@/sections/Contact'
 import { Portfolio } from '@/sections/Portfolio'
 import { Stats } from '@/sections/Stats'
@@ -64,6 +64,7 @@ export function Tui({ building = false }: TuiProps) {
   const [selected, setSelected] = useState(0)
   const [showHelp, setShowHelp] = useState(false)
   const [showSign, setShowSign] = useState(false)
+  const [showAdmin, setShowAdmin] = useState(false)
   const [cmdMode, setCmdMode] = useState(false)
   const [cmdValue, setCmdValue] = useState('')
   const { stack, current, atRoot, push, pop, goTo } = useNavStack()
@@ -199,13 +200,13 @@ export function Tui({ building = false }: TuiProps) {
   }, [pop, closeCmd])
 
   // Returning from the Cloudflare Access login, the Worker bounces to `?admin=1`
-  // — open the admin section and strip the param so a refresh won't reopen it.
-  // Runs once the TUI is live (not during the build animation); jumpTo is stable.
+  // — open the admin overlay and strip the param so a refresh won't reopen it.
+  // Runs once the TUI is live (not during the build animation).
   useEffect(() => {
     if (building) return
     const params = new URLSearchParams(window.location.search)
     if (params.get('admin') !== '1') return
-    jumpTo({ id: 'admin', label: 'admin' })
+    setShowAdmin(true)
     params.delete('admin')
     const qs = params.toString()
     window.history.replaceState(
@@ -213,7 +214,7 @@ export function Tui({ building = false }: TuiProps) {
       '',
       window.location.pathname + (qs ? `?${qs}` : ''),
     )
-  }, [building, jumpTo])
+  }, [building])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -221,8 +222,8 @@ export function Tui({ building = false }: TuiProps) {
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return
 
-      // The sign modal owns all keys while open.
-      if (showSign) return
+      // The sign modal / admin overlay own all keys while open.
+      if (showSign || showAdmin) return
 
       // `:` opens command mode from anywhere.
       if (e.key === ':') {
@@ -332,7 +333,7 @@ export function Tui({ building = false }: TuiProps) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [showHelp, showSign, atRoot, selected, current, enterSection, goBack, toggleCmd, cycleTheme])
+  }, [showHelp, showSign, showAdmin, atRoot, selected, current, enterSection, goBack, toggleCmd, cycleTheme])
 
   // Run a `:command` — jump to a section, or to the admin (coming soon) page.
   const runCommand = (raw: string) => {
@@ -350,7 +351,7 @@ export function Tui({ building = false }: TuiProps) {
     }
     const section = SECTIONS.find((s) => s.name === v)
     if (section) jumpTo({ id: section.name, label: section.name })
-    else if (v === 'admin') jumpTo({ id: 'admin', label: 'admin' })
+    else if (v === 'admin') setShowAdmin(true)
     // unknown command: ignore
   }
 
@@ -486,8 +487,6 @@ export function Tui({ building = false }: TuiProps) {
             </Suspense>
           ) : current.id === 'stats' ? (
             <Stats />
-          ) : current.id === 'admin' ? (
-            <AdminPanel />
           ) : (
             <p className={styles.placeholder}>
               {current.label} — content coming soon. Press{' '}
@@ -556,6 +555,9 @@ export function Tui({ building = false }: TuiProps) {
           onSigned={() => window.dispatchEvent(new Event(SIGNED_EVENT))}
         />
       )}
+
+      {/* Full-screen admin overlay (opened via `:admin`, Access-gated). */}
+      {showAdmin && <AdminOverlay onClose={() => setShowAdmin(false)} />}
     </div>
   )
 }
