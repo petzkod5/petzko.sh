@@ -18,6 +18,7 @@ import { Stats } from '@/sections/Stats'
 import { System } from '@/sections/System'
 import { Neofetch } from '@/sections/Neofetch'
 import { Uptime } from '@/sections/Uptime'
+import { Shell } from '@/shell/Shell'
 import { Breadcrumb } from './Breadcrumb'
 import { Help } from './Help'
 import { SignModal } from './SignModal'
@@ -92,6 +93,7 @@ export function Tui({ building = false }: TuiProps) {
   const [showHelp, setShowHelp] = useState(false)
   const [showSign, setShowSign] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
+  const [showShell, setShowShell] = useState(false)
   const [cmdMode, setCmdMode] = useState(false)
   const [cmdValue, setCmdValue] = useState('')
   const { stack, current, atRoot, push, pop, goTo } = useNavStack()
@@ -250,8 +252,8 @@ export function Tui({ building = false }: TuiProps) {
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return
 
-      // The sign modal / admin overlay own all keys while open.
-      if (showSign || showAdmin) return
+      // The sign modal / admin overlay / shell own all keys while open.
+      if (showSign || showAdmin || showShell) return
 
       // `:` opens command mode from anywhere.
       if (e.key === ':') {
@@ -270,6 +272,13 @@ export function Tui({ building = false }: TuiProps) {
       if (e.key === 't' || e.key === 'T') {
         e.preventDefault()
         cycleTheme()
+        return
+      }
+      // `S` (Shift+s) drops into the fake shell from anywhere (lowercase `s` is
+      // the stats section).
+      if (e.key === 'S') {
+        e.preventDefault()
+        setShowShell(true)
         return
       }
       if (showHelp) {
@@ -361,7 +370,7 @@ export function Tui({ building = false }: TuiProps) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [showHelp, showSign, showAdmin, atRoot, selected, current, enterSection, goBack, toggleCmd, cycleTheme])
+  }, [showHelp, showSign, showAdmin, showShell, atRoot, selected, current, enterSection, goBack, toggleCmd, cycleTheme])
 
   // Run a `:command` — jump to a section, or to the admin (coming soon) page.
   const runCommand = (raw: string) => {
@@ -381,6 +390,7 @@ export function Tui({ building = false }: TuiProps) {
     if (section) jumpTo({ id: section.name, label: section.name })
     else if (v === 'top') jumpTo({ id: 'system', label: 'system' }) // `:top` → system
     else if (v === 'neofetch' || v === 'nf') jumpTo({ id: 'neofetch', label: 'neofetch' })
+    else if (v === 'shell') setShowShell(true)
     else if (v === 'uptime') jumpTo({ id: 'uptime', label: 'uptime' })
     else if (v === 'admin') setShowAdmin(true)
     // unknown command: ignore
@@ -487,7 +497,15 @@ export function Tui({ building = false }: TuiProps) {
         </span>
 
         <div className={styles.scroll} ref={scrollRef} onScroll={onScrollPane}>
-          {showHelp ? (
+          {showShell ? (
+            <Shell
+              onClose={() => setShowShell(false)}
+              onGoto={(s) => {
+                setShowShell(false)
+                jumpTo({ id: s, label: s })
+              }}
+            />
+          ) : showHelp ? (
             <Help sections={SECTIONS} />
           ) : atRoot ? (
             <table className={styles.table}>

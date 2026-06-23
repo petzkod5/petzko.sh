@@ -1,0 +1,72 @@
+/* psh — fake shell, rendered in the content pane (on-theme CRT terminal). */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 360px;
+  height: 100%;
+  padding: 0.5rem 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--color-text-body);
+  cursor: text;
+}
+
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.entry {
+  margin: 0;
+}
+
+.echo {
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.line {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-text-body);
+}
+
+.pending {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.promptRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
+.prompt {
+  color: var(--color-highlight);
+  white-space: pre;
+  text-shadow: 0 0 6px var(--crt-glow-soft);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  color: var(--color-text-primary);
+  caret-color: var(--color-highlight);
+}
+
+/* A chunkier phosphor caret to read as a terminal block. */
+.input {
+  caret-shape: block;
+}
