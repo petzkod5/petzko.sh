@@ -43,3 +43,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/name: {{ include "petzko-sh.name" . }}-backend
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/* Collector selector labels — distinct app name (no Service fronts it). */}}
+{{- define "petzko-sh.collectorSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "petzko-sh.name" . }}-collector
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

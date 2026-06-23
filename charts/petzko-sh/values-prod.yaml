@@ -5,6 +5,11 @@ buildEnv: prod
 # Served from the homelab cluster.
 clusterId: rivendell
 
+# Run the telemetry collector here (one per physical cluster; staging shares
+# rivendell so it stays off there).
+collector:
+  enabled: true
+
 image:
   # Promoted manually: bump this to the release you want live in prod, then
   # commit. (Not touched by semantic-release.)

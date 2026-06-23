@@ -1,0 +1,94 @@
+{{- if .Values.collector.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "petzko-sh.fullname" . }}-collector
+  labels:
+    {{- include "petzko-sh.labels" . | nindent 4 }}
+    app.kubernetes.io/component: collector
+spec:
+  # Single instance — one collector per physical cluster (it reports one cluster_id).
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "petzko-sh.collectorSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "petzko-sh.collectorSelectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: collector
+      annotations:
+        # Roll the pod when the script changes (ConfigMap is mounted, not env).
+        checksum/script: {{ .Files.Get "files/collect.py" | sha256sum }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: {{ .Chart.Name }}-collector
+          image: {{ .Values.collector.image | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["python", "/scripts/collect.py"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: PROM_URL
+              value: {{ .Values.collector.promUrl | quote }}
+            - name: INGEST_URL
+              value: {{ .Values.collector.ingestUrl | quote }}
+            - name: CLUSTER_ID
+              value: {{ .Values.collector.clusterId | default .Values.clusterId | quote }}
+            - name: ROLE
+              value: {{ .Values.collector.role | quote }}
+            - name: INTERVAL_SECONDS
+              value: {{ .Values.collector.intervalSeconds | quote }}
+            - name: HOME
+              value: /tmp
+            - name: TMPDIR
+              value: /tmp
+            # Per-cluster ingest token — created out-of-band:
+            #   kubectl create secret generic telemetry-collector -n petzko-prod \
+            #     --from-literal=token=<TOKEN>
+            # Same token as one entry in the Worker's TELEMETRY_TOKENS map.
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.collector.tokenSecretName | quote }}
+                  key: token
+          resources:
+            {{- toYaml .Values.collector.resources | nindent 12 }}
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: scripts
+          configMap:
+            name: {{ include "petzko-sh.fullname" . }}-collector
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -25,6 +25,33 @@ buildEnv: dev
 # in the environment overlays.
 clusterId: ""
 
+# ── Telemetry collector ───────────────────────────────────────────────────────
+# Optional pod that scrapes the in-cluster Prometheus and pushes a sanitized
+# fleet snapshot to the petzko-edge Worker (powers the :system dashboard).
+# Website-specific, so it lives here rather than the cluster repo. Enable in
+# exactly ONE deployment per physical cluster (it reports a single cluster_id) —
+# i.e. prod only on rivendell, since staging shares the same cluster.
+collector:
+  enabled: false
+  image: python:3.12-slim
+  # Live cadence — how often to scrape + push, in seconds.
+  intervalSeconds: 5
+  promUrl: http://kube-prometheus-stack-prometheus.monitoring:9090
+  ingestUrl: https://petzko.sh/api/telemetry/ingest
+  # Defaults to the top-level clusterId when empty.
+  clusterId: ""
+  role: primary
+  # k8s Secret (key: token) holding the ingest bearer token — created out-of-band,
+  # mirrors one entry in the Worker's TELEMETRY_TOKENS map.
+  tokenSecretName: telemetry-collector
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
 # Container listens on 8080 (non-root nginx); Service fronts it on 80.
 containerPort: 8080
 

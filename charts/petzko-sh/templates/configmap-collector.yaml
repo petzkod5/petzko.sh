@@ -1,0 +1,12 @@
+{{- if .Values.collector.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "petzko-sh.fullname" . }}-collector
+  labels:
+    {{- include "petzko-sh.labels" . | nindent 4 }}
+    app.kubernetes.io/component: collector
+data:
+  collect.py: |
+{{ .Files.Get "files/collect.py" | indent 4 }}
+{{- end }}
