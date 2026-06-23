@@ -282,23 +282,40 @@
 }
 .node {
   display: grid;
-  grid-template-columns: 1rem 10rem auto 5rem auto 5rem;
+  grid-template-columns: 1rem 11rem 1fr 1fr;
   align-items: center;
-  gap: 0.7rem;
+  gap: 1rem;
   font-size: 0.8rem;
   color: var(--color-text-secondary);
 }
-.node .bar {
-  width: 100%;
-  min-width: 60px;
-}
 .nodeName {
   color: var(--color-text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.nodeStat {
+
+/* Each metric is a self-labelled unit: `cpu [bar] 60%`. */
+.nodeMetric {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.nodeMetricLabel {
+  color: var(--color-text-secondary);
+  opacity: 0.75;
+}
+.nodeMetric .bar {
+  flex: 1;
+  min-width: 50px;
+}
+.nodeMetricVal {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  min-width: 2.6rem;
+  text-align: right;
 }
+
 .nodeReady {
   color: var(--color-highlight);
 }
@@ -310,10 +327,20 @@
   .grid2 {
     grid-template-columns: 1fr;
   }
+  /* Stack: dot + name on the first line, each metric (label + value, no bar)
+     on its own line beneath. */
   .node {
-    grid-template-columns: 1rem 1fr auto;
+    grid-template-columns: 1rem 1fr;
+    gap: 0.25rem 0.6rem;
   }
-  .node .bar {
+  .nodeMetric {
+    grid-column: 1 / -1;
+    padding-left: 1.6rem;
+  }
+  .nodeMetric .bar {
     display: none;
+  }
+  .nodeMetricVal {
+    text-align: left;
   }
 }

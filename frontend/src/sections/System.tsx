@@ -186,10 +186,16 @@ function ClusterView({ c }: { c: ClusterSnapshot }) {
                   {n.ready ? '●' : '○'}
                 </span>
                 <span className={styles.nodeName}>{n.name}</span>
-                <span className={styles.nodeStat}>cpu {n.cpu_pct}%</span>
-                <Bar value={n.cpu_pct} segments={12} />
-                <span className={styles.nodeStat}>mem {n.mem_pct}%</span>
-                <Bar value={n.mem_pct} segments={12} />
+                <span className={styles.nodeMetric}>
+                  <span className={styles.nodeMetricLabel}>cpu</span>
+                  <Bar value={n.cpu_pct} segments={12} />
+                  <span className={styles.nodeMetricVal}>{n.cpu_pct}%</span>
+                </span>
+                <span className={styles.nodeMetric}>
+                  <span className={styles.nodeMetricLabel}>mem</span>
+                  <Bar value={n.mem_pct} segments={12} />
+                  <span className={styles.nodeMetricVal}>{n.mem_pct}%</span>
+                </span>
               </div>
             ))}
           </div>
