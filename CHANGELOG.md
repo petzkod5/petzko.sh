@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/petzkod5/petzko.sh/compare/v1.23.0...v1.24.0) (2026-06-23)
+
+
+### Features
+
+* **help:** list Shift+S → Shell in the help overlay ([d21f960](https://github.com/petzkod5/petzko.sh/commit/d21f9603afdcc0a0b920ff6979cb11dc89f07e21))
+
 # [1.23.0](https://github.com/petzkod5/petzko.sh/compare/v1.22.0...v1.23.0) (2026-06-23)
 
 
