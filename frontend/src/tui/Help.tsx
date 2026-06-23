@@ -21,6 +21,7 @@ const GENERAL: Binding[] = [
   { keys: ':', desc: 'Command' },
   { keys: '?', desc: 'Help' },
   { keys: 't', desc: 'Theme' },
+  { keys: 'S', desc: 'Shell' },
   { keys: 'esc', desc: 'Back' },
 ]
 
