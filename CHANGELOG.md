@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/petzkod5/petzko.sh/compare/v1.11.3...v1.12.0) (2026-06-23)
+
+
+### Features
+
+* admin section gated by Cloudflare Access ([034ae08](https://github.com/petzkod5/petzko.sh/commit/034ae08e85fd36107c3258f7f037ed7ad6a5a134))
+
 ## [1.11.3](https://github.com/petzkod5/petzko.sh/compare/v1.11.2...v1.11.3) (2026-06-21)
 
 
