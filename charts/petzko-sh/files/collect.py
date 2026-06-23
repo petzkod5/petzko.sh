@@ -9,11 +9,26 @@
 # values (collector.enabled); one instance per physical cluster.
 
 import json
+import logging
 import os
 import re
+import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
+
+# Log to stdout with timestamps + levels so status is visible in `kubectl logs`
+# and queryable in Grafana Loki. The message bodies are logfmt-style (key=value)
+# so `| logfmt` parses them in LogQL. StreamHandler flushes per record, and the
+# Deployment sets PYTHONUNBUFFERED=1, so lines appear in real time.
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format="%(asctime)s %(levelname)s %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%S%z",
+)
+log = logging.getLogger("collector")
 
 PROM = os.environ["PROM_URL"].rstrip("/")
 INGEST = os.environ["INGEST_URL"]
@@ -187,14 +202,35 @@ def post(snapshot):
 
 
 def main():
-    print(f"collector: cluster={CLUSTER_ID} interval={INTERVAL}s -> {INGEST}")
+    log.info(
+        "start cluster=%s role=%s interval=%ss ingest=%s",
+        CLUSTER_ID, ROLE, INTERVAL, INGEST,
+    )
     while True:
         start = time.time()
         try:
-            status = post(build_snapshot())
-            print("ingest", status)
+            snap = build_snapshot()
+            status = post(snap)
+            dur_ms = int((time.time() - start) * 1000)
+            log.info(
+                "ingest status=%s nodes=%d pods=%d/%d services=%d dur_ms=%d",
+                status,
+                len(snap["nodes"]),
+                snap["workloads"]["pods_running"],
+                snap["workloads"]["pods_total"],
+                len(snap.get("services", [])),
+                dur_ms,
+            )
+        except urllib.error.HTTPError as e:
+            log.warning(
+                "ingest rejected status=%s dur_ms=%d",
+                e.code, int((time.time() - start) * 1000),
+            )
         except Exception as e:  # never let one bad scrape/push kill the loop
-            print("collector error:", repr(e))
+            log.warning(
+                "ingest failed dur_ms=%d error=%r",
+                int((time.time() - start) * 1000), e,
+            )
         time.sleep(max(1, INTERVAL - (time.time() - start)))
 
 

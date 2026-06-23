@@ -52,6 +52,10 @@ spec:
               value: {{ .Values.collector.role | quote }}
             - name: INTERVAL_SECONDS
               value: {{ .Values.collector.intervalSeconds | quote }}
+            # Stream stdout in real time (no block-buffering) so `kubectl logs`
+            # and Loki see each push as it happens.
+            - name: PYTHONUNBUFFERED
+              value: "1"
             - name: HOME
               value: /tmp
             - name: TMPDIR
