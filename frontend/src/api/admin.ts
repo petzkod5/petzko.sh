@@ -9,6 +9,17 @@ export interface AdminIdentity {
   email: string
 }
 
+/** Thrown when an admin write fails because the Cloudflare Access session is no
+ *  longer valid — either the Worker rejected the token (401/403) or Access
+ *  bounced the request to its cross-origin login page (surfacing as a thrown
+ *  fetch). Callers should prompt re-authentication; the local draft is unharmed. */
+export class AdminAuthError extends Error {
+  constructor() {
+    super('admin session expired')
+    this.name = 'AdminAuthError'
+  }
+}
+
 export interface AdminGuestEntry {
   id: number
   name: string
@@ -49,14 +60,24 @@ export async function fetchAdminMe(signal?: AbortSignal): Promise<AdminIdentity 
   return (await res.json()) as AdminIdentity
 }
 
-/** Save all three content sections to D1. Throws on network/server error. */
+/** Save all three content sections to D1. Throws AdminAuthError when the Access
+ *  session has expired, or a generic Error on other server failures. */
 export async function putAdminContent(content: SiteContent): Promise<void> {
-  const res = await fetch('/api/admin/content', {
-    method: 'PUT',
-    credentials: 'same-origin',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(content),
-  })
+  let res: Response
+  try {
+    res = await fetch('/api/admin/content', {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(content),
+    })
+  } catch {
+    // A thrown fetch on this same-origin PUT almost always means Access bounced
+    // it to its cross-origin login page (expired session), surfacing as a
+    // CORS/network error. Treat as an auth failure — the draft is safe locally.
+    throw new AdminAuthError()
+  }
+  if (res.status === 401 || res.status === 403) throw new AdminAuthError()
   if (!res.ok) throw new Error(`PUT /api/admin/content ${res.status}`)
 }
 

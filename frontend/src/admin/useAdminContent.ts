@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { seedContent, type AdminContent, type AboutDoc, type ContactItem, type ProjectItem } from './model'
 import { fetchSiteContent, mergeContent } from '@/content/load'
-import { putAdminContent } from '@/api/admin'
+import { putAdminContent, AdminAuthError } from '@/api/admin'
 
 // Keep an unsaved-draft recovery cache in localStorage so edits survive a page
 // reload before the user saves. Cleared on successful save.
@@ -40,6 +40,9 @@ export interface AdminContentStore {
   loading: boolean
   saving: boolean
   saveError: string | null
+  /** True when the last save failed because the Access session expired. The
+   *  draft is preserved; the UI should prompt re-authentication. */
+  authExpired: boolean
   save: () => Promise<void>
   discard: () => void
   resetToSeed: () => void
@@ -55,6 +58,7 @@ export function useAdminContent(): AdminContentStore {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [authExpired, setAuthExpired] = useState(false)
 
   // Hydrate from D1 on mount. If there's a local draft (unsaved changes), keep
   // it on top of the freshly fetched saved state. Live content is merged per-key
@@ -97,13 +101,15 @@ export function useAdminContent(): AdminContentStore {
   const save = useCallback(async () => {
     setSaving(true)
     setSaveError(null)
+    setAuthExpired(false)
     try {
       await putAdminContent(draft)
       setSaved(draft)
       clearDraft()
       hasDraft.current = false
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'save failed')
+      if (err instanceof AdminAuthError) setAuthExpired(true)
+      else setSaveError(err instanceof Error ? err.message : 'save failed')
     } finally {
       setSaving(false)
     }
@@ -125,5 +131,5 @@ export function useAdminContent(): AdminContentStore {
   const setContacts = useCallback((contacts: ContactItem[]) => setDraft((d) => ({ ...d, contacts })), [])
   const setPortfolio = useCallback((portfolio: ProjectItem[]) => setDraft((d) => ({ ...d, portfolio })), [])
 
-  return { draft, saved, dirty, loading, saving, saveError, save, discard, resetToSeed, setAbout, setContacts, setPortfolio }
+  return { draft, saved, dirty, loading, saving, saveError, authExpired, save, discard, resetToSeed, setAbout, setContacts, setPortfolio }
 }

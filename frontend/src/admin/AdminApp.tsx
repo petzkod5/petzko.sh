@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ADMIN_LOGOUT_URL } from '@/api/admin'
+import { ADMIN_LOGOUT_URL, ADMIN_LOGIN_URL } from '@/api/admin'
 import { useAdminContent } from './useAdminContent'
 import { AboutEditor } from './editors/AboutEditor'
 import { ContactEditor } from './editors/ContactEditor'
@@ -17,6 +17,16 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
   const attemptClose = () => {
     if (store.dirty && !window.confirm('Discard unsaved changes?')) return
     onClose()
+  }
+
+  const attemptReset = () => {
+    if (
+      window.confirm(
+        'Replace all editor content with the bundled seed defaults? Your current edits will be lost.',
+      )
+    ) {
+      store.resetToSeed()
+    }
   }
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -40,13 +50,15 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
 
   const statusLabel = store.saving
     ? 'saving…'
-    : store.saveError
-      ? `error: ${store.saveError}`
-      : store.loading
-        ? 'loading…'
-        : store.dirty
-          ? 'unsaved changes'
-          : 'all changes saved'
+    : store.authExpired
+      ? 'session expired — your draft is saved'
+      : store.saveError
+        ? `error: ${store.saveError}`
+        : store.loading
+          ? 'loading…'
+          : store.dirty
+            ? 'unsaved changes'
+            : 'all changes saved'
 
   return (
     <div className={s.overlay}>
@@ -89,7 +101,7 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
 
           <div className={s.sidebarFoot}>
             {store.loading ? 'loading content from D1…' : 'changes saved to D1 on save.'}
-            <button type="button" className={s.resetBtn} onClick={store.resetToSeed}>
+            <button type="button" className={s.resetBtn} onClick={attemptReset}>
               reset to seed content
             </button>
           </div>
@@ -127,11 +139,20 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
 
       {/* ── Bottom bar ── */}
       <div className={s.bottombar}>
-        <span className={`${s.status} ${store.dirty ? s.statusDirty : ''} ${store.saveError ? s.statusDirty : ''}`}>
+        <span
+          className={`${s.status} ${
+            store.dirty || store.saveError || store.authExpired ? s.statusDirty : ''
+          }`}
+        >
           <span className={s.statusDot} />
           {statusLabel}
         </span>
         <div className={s.bottomActions}>
+          {store.authExpired && (
+            <a className={s.saveBtn} href={ADMIN_LOGIN_URL}>
+              re-authenticate →
+            </a>
+          )}
           <a className={s.discardBtn} href={ADMIN_LOGOUT_URL}>
             sign out
           </a>
