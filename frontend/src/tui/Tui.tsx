@@ -15,6 +15,7 @@ import { Contact } from '@/sections/Contact'
 import { Portfolio } from '@/sections/Portfolio'
 import { Stats } from '@/sections/Stats'
 import { System } from '@/sections/System'
+import { Neofetch } from '@/sections/Neofetch'
 import { Breadcrumb } from './Breadcrumb'
 import { Help } from './Help'
 import { SignModal } from './SignModal'
@@ -360,6 +361,7 @@ export function Tui({ building = false }: TuiProps) {
     const section = SECTIONS.find((s) => s.name === v)
     if (section) jumpTo({ id: section.name, label: section.name })
     else if (v === 'top') jumpTo({ id: 'system', label: 'system' }) // `:top` → system
+    else if (v === 'neofetch' || v === 'nf') jumpTo({ id: 'neofetch', label: 'neofetch' })
     else if (v === 'admin') setShowAdmin(true)
     // unknown command: ignore
   }
@@ -498,6 +500,8 @@ export function Tui({ building = false }: TuiProps) {
             <Stats />
           ) : current.id === 'system' ? (
             <System />
+          ) : current.id === 'neofetch' ? (
+            <Neofetch />
           ) : (
             <p className={styles.placeholder}>
               {current.label} — content coming soon. Press{' '}

@@ -1,0 +1,94 @@
+/* ── :neofetch — ASCII logo + two-column cluster facts ─────────────────────── */
+
+.wrap {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  width: 100%;
+  min-height: 360px;
+  padding: 1.5rem 1rem;
+  font-family: var(--font-mono);
+}
+
+.logo {
+  margin: 0;
+  white-space: pre;
+  font-size: 0.82rem;
+  line-height: 1.15;
+  color: var(--color-highlight);
+  text-shadow: 0 0 8px var(--crt-glow-soft);
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  min-width: 17rem;
+  color: var(--color-text-secondary);
+}
+
+.title {
+  font-size: 0.95rem;
+  color: var(--color-text-body);
+  margin-bottom: 0.1rem;
+}
+.user,
+.host {
+  color: var(--color-highlight);
+}
+.stale {
+  margin-left: 0.5rem;
+  font-size: 0.74rem;
+  color: var(--color-accent-amber);
+}
+
+.sep {
+  height: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-highlight) 28%, transparent);
+  margin: 0.25rem 0 0.45rem;
+}
+
+.fact {
+  display: flex;
+  gap: 0.7rem;
+  font-size: 0.85rem;
+}
+.key {
+  min-width: 5.5rem;
+  color: var(--color-accent-cyan);
+}
+.val {
+  color: var(--color-text-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.swatches {
+  display: flex;
+  gap: 4px;
+  margin-top: 0.7rem;
+}
+.sw {
+  width: 14px;
+  height: 14px;
+  border-radius: 1px;
+}
+
+.muted {
+  align-self: center;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  max-width: 22rem;
+}
+
+@media (max-width: 560px) {
+  .wrap {
+    gap: 1.25rem;
+  }
+  .logo {
+    font-size: 0.72rem;
+  }
+}
