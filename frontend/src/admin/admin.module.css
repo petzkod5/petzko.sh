@@ -177,6 +177,24 @@
   color: var(--a-accent-ink);
 }
 
+/* Section flagged invalid by the Worker on the last save. */
+.navItemInvalid {
+  box-shadow: inset 2px 0 0 var(--a-danger);
+}
+
+.navInvalidMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--a-accent-ink);
+  background: var(--a-danger);
+  border-radius: 50%;
+}
+
 .sidebarFoot {
   margin-top: auto;
   padding: 0.7rem 0.4rem 0.2rem;

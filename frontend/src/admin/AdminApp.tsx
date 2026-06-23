@@ -9,6 +9,14 @@ import s from './admin.module.css'
 
 type SectionId = 'about' | 'contact' | 'portfolio' | 'guestlog' | 'blog'
 
+// The Worker flags content by storage key ('contacts'/'portfolio'); map those
+// to the sidebar section id and a human label for error surfacing.
+const FIELD_TO_SECTION: Record<string, { id: SectionId; label: string }> = {
+  about: { id: 'about', label: 'About' },
+  contacts: { id: 'contact', label: 'Contact' },
+  portfolio: { id: 'portfolio', label: 'Portfolio' },
+}
+
 export function AdminApp({ email, onClose }: { email: string; onClose: () => void }) {
   const store = useAdminContent()
   const [section, setSection] = useState<SectionId>('about')
@@ -48,17 +56,26 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
     { id: 'blog', label: 'blog', soon: true },
   ]
 
+  // Map the Worker's rejected-field keys onto sidebar sections + display labels.
+  const invalid = store.invalidFields
+    .map((f) => FIELD_TO_SECTION[f])
+    .filter((x): x is { id: SectionId; label: string } => Boolean(x))
+  const invalidIds = new Set(invalid.map((x) => x.id))
+  const invalidLabels = invalid.map((x) => x.label)
+
   const statusLabel = store.saving
     ? 'saving…'
     : store.authExpired
       ? 'session expired — your draft is saved'
-      : store.saveError
-        ? `error: ${store.saveError}`
-        : store.loading
-          ? 'loading…'
-          : store.dirty
-            ? 'unsaved changes'
-            : 'all changes saved'
+      : store.invalidFields.length
+        ? `rejected — fix ${invalidLabels.join(', ') || 'content'}`
+        : store.saveError
+          ? `error: ${store.saveError}`
+          : store.loading
+            ? 'loading…'
+            : store.dirty
+              ? 'unsaved changes'
+              : 'all changes saved'
 
   return (
     <div className={s.overlay}>
@@ -86,11 +103,18 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
             <button
               key={item.id}
               type="button"
-              className={`${s.navItem} ${section === item.id ? s.navItemActive : ''}`}
+              className={`${s.navItem} ${section === item.id ? s.navItemActive : ''} ${
+                invalidIds.has(item.id) ? s.navItemInvalid : ''
+              }`}
               onClick={() => setSection(item.id)}
             >
               <span className={s.navChevron}>›</span>
               <span className={s.navLabel}>{item.label}</span>
+              {invalidIds.has(item.id) && (
+                <span className={s.navInvalidMark} title="rejected on last save">
+                  !
+                </span>
+              )}
               {item.soon ? (
                 <span className={s.navSoon}>soon</span>
               ) : (
@@ -141,7 +165,9 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
       <div className={s.bottombar}>
         <span
           className={`${s.status} ${
-            store.dirty || store.saveError || store.authExpired ? s.statusDirty : ''
+            store.dirty || store.saveError || store.authExpired || store.invalidFields.length
+              ? s.statusDirty
+              : ''
           }`}
         >
           <span className={s.statusDot} />

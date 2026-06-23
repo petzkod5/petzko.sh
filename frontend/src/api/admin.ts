@@ -20,6 +20,17 @@ export class AdminAuthError extends Error {
   }
 }
 
+/** Thrown when the Worker rejects a content write as invalid (422). `fields`
+ *  lists the section keys it flagged (e.g. 'about', 'contacts', 'portfolio'). */
+export class AdminValidationError extends Error {
+  fields: string[]
+  constructor(fields: string[]) {
+    super(fields.length ? `invalid: ${fields.join(', ')}` : 'invalid content')
+    this.name = 'AdminValidationError'
+    this.fields = fields
+  }
+}
+
 export interface AdminGuestEntry {
   id: number
   name: string
@@ -78,6 +89,18 @@ export async function putAdminContent(content: SiteContent): Promise<void> {
     throw new AdminAuthError()
   }
   if (res.status === 401 || res.status === 403) throw new AdminAuthError()
+  if (res.status === 422) {
+    let fields: string[] = []
+    try {
+      const body = (await res.json()) as { fields?: unknown }
+      if (Array.isArray(body.fields)) {
+        fields = body.fields.filter((f): f is string => typeof f === 'string')
+      }
+    } catch {
+      // non-JSON body — fall through with empty fields
+    }
+    throw new AdminValidationError(fields)
+  }
   if (!res.ok) throw new Error(`PUT /api/admin/content ${res.status}`)
 }
 
