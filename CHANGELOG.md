@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/petzkod5/petzko.sh/compare/v1.21.0...v1.22.0) (2026-06-23)
+
+
+### Features
+
+* **system:** live "Users" presence count in the context metadata ([0a109e4](https://github.com/petzkod5/petzko.sh/commit/0a109e4752d749fc5f37a3b76126f23307e00900))
+
 # [1.21.0](https://github.com/petzkod5/petzko.sh/compare/v1.20.0...v1.21.0) (2026-06-23)
 
 
