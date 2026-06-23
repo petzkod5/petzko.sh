@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/petzkod5/petzko.sh/compare/v1.19.0...v1.20.0) (2026-06-23)
+
+
+### Features
+
+* **chart:** telemetry collector as an optional pod (real-time loop) ([e45ae77](https://github.com/petzkod5/petzko.sh/commit/e45ae7770e1c9391163eb446b02297d41b47b56d))
+
 # [1.19.0](https://github.com/petzkod5/petzko.sh/compare/v1.18.0...v1.19.0) (2026-06-23)
 
 
