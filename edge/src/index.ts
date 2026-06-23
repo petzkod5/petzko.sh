@@ -497,6 +497,9 @@ interface TelemetrySnapshot {
     uptime_seconds: number
     nodes_ready: number
     nodes_total: number
+    load_1?: number
+    load_5?: number
+    load_15?: number
   }
   resources: {
     cpu_used_cores: number
@@ -548,6 +551,13 @@ function sanitizeSnapshot(body: Record<string, unknown>): TelemetrySnapshot | nu
           }
         })
       : [],
+  }
+
+  // Load average is optional (node-exporter); preserve fractional values.
+  if (typeof cluster.load_1 === 'number') {
+    out.cluster.load_1 = num(cluster.load_1)
+    out.cluster.load_5 = num(cluster.load_5)
+    out.cluster.load_15 = num(cluster.load_15)
   }
 
   // Storage is optional (depends on Longhorn metrics being scraped).

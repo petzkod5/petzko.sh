@@ -13,6 +13,9 @@ export interface ClusterSnapshot {
     uptime_seconds: number
     nodes_ready: number
     nodes_total: number
+    load_1?: number
+    load_5?: number
+    load_15?: number
   }
   resources: {
     cpu_used_cores: number

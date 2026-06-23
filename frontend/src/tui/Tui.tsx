@@ -16,6 +16,7 @@ import { Portfolio } from '@/sections/Portfolio'
 import { Stats } from '@/sections/Stats'
 import { System } from '@/sections/System'
 import { Neofetch } from '@/sections/Neofetch'
+import { Uptime } from '@/sections/Uptime'
 import { Breadcrumb } from './Breadcrumb'
 import { Help } from './Help'
 import { SignModal } from './SignModal'
@@ -362,6 +363,7 @@ export function Tui({ building = false }: TuiProps) {
     if (section) jumpTo({ id: section.name, label: section.name })
     else if (v === 'top') jumpTo({ id: 'system', label: 'system' }) // `:top` → system
     else if (v === 'neofetch' || v === 'nf') jumpTo({ id: 'neofetch', label: 'neofetch' })
+    else if (v === 'uptime') jumpTo({ id: 'uptime', label: 'uptime' })
     else if (v === 'admin') setShowAdmin(true)
     // unknown command: ignore
   }
@@ -502,6 +504,8 @@ export function Tui({ building = false }: TuiProps) {
             <System />
           ) : current.id === 'neofetch' ? (
             <Neofetch />
+          ) : current.id === 'uptime' ? (
+            <Uptime />
           ) : (
             <p className={styles.placeholder}>
               {current.label} — content coming soon. Press{' '}

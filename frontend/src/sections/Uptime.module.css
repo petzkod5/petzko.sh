@@ -1,0 +1,46 @@
+/* ── :uptime — classic one-line readout ────────────────────────────────────── */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 360px;
+  padding: 1.5rem 1rem;
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.line {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.time {
+  color: var(--color-accent-cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+.up {
+  color: var(--color-highlight);
+  text-shadow: 0 0 6px var(--crt-glow-soft);
+}
+
+.sub {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  opacity: 0.75;
+}
+
+.muted {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  max-width: 22rem;
+}
