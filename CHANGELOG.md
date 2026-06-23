@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/petzkod5/petzko.sh/compare/v1.14.1...v1.15.0) (2026-06-23)
+
+
+### Features
+
+* **system:** SERVICES manifest section ([4df6982](https://github.com/petzkod5/petzko.sh/commit/4df6982b8ee98741a3f96c436157bf362b918e38))
+
 ## [1.14.1](https://github.com/petzkod5/petzko.sh/compare/v1.14.0...v1.14.1) (2026-06-23)
 
 
