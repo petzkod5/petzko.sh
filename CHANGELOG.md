@@ -1,3 +1,11 @@
+# [1.19.0](https://github.com/petzkod5/petzko.sh/compare/v1.18.0...v1.19.0) (2026-06-23)
+
+
+### Features
+
+* **edge:** real-time telemetry via TelemetryHub Durable Object ([3c46d48](https://github.com/petzkod5/petzko.sh/commit/3c46d481f1b20bd4b92d055a373227d8408cf8c8))
+* **system:** WebSocket-first telemetry with poll fallback ([aa013a0](https://github.com/petzkod5/petzko.sh/commit/aa013a0718c364296be0092dc0e40b61258fc19b))
+
 # [1.18.0](https://github.com/petzkod5/petzko.sh/compare/v1.17.0...v1.18.0) (2026-06-23)
 
 
