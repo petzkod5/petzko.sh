@@ -127,13 +127,16 @@ export default {
         if (body.contacts !== undefined) entries.push(['contacts', body.contacts])
         if (body.portfolio !== undefined) entries.push(['portfolio', body.portfolio])
 
-        for (const [key, value] of entries) {
-          await env.DB.prepare(
+        // Upsert all provided sections in a single batch so the write is atomic
+        // — a partial failure can't leave content half-updated.
+        if (entries.length) {
+          const upsert = env.DB.prepare(
             `INSERT INTO content (key, value, updated_at) VALUES (?, ?, ?)
              ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
           )
-            .bind(key, JSON.stringify(value), now)
-            .run()
+          await env.DB.batch(
+            entries.map(([key, value]) => upsert.bind(key, JSON.stringify(value), now)),
+          )
         }
 
         return json({ ok: true })

@@ -81,9 +81,17 @@ export function useAdminContent(): AdminContentStore {
     [draft, saved],
   )
 
-  // Persist draft to localStorage whenever it changes.
+  // Mirror the draft to localStorage for crash/reload recovery. When the draft
+  // matches the saved snapshot (e.g. edits manually reverted), clear the cache
+  // so a reload doesn't resurrect phantom "unsaved changes".
   useEffect(() => {
-    if (dirty) saveDraft(draft)
+    if (dirty) {
+      saveDraft(draft)
+      hasDraft.current = true
+    } else {
+      clearDraft()
+      hasDraft.current = false
+    }
   }, [draft, dirty])
 
   const save = useCallback(async () => {
