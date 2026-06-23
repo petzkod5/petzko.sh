@@ -1,0 +1,319 @@
+/* ── System section — homelab fleet telemetry, TUI dashboard ───────────────────
+   Bordered phosphor panels in the ncurses/htop tradition: monospace, segmented
+   block gauges, dim section rules. Authentically terminal, not a modern dash. */
+
+.system {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 360px;
+  padding: 0.5rem 1rem 1.5rem;
+}
+
+.panelWrap {
+  width: min(900px, 100%);
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+}
+
+/* ── top bar ── */
+.topbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  color: var(--color-text-body);
+}
+
+.live {
+  font-size: 0.78rem;
+  color: var(--color-highlight);
+}
+
+.muted {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+/* ── cluster switcher ── */
+.clusters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.clustersLabel {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.7rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-highlight) 22%, transparent);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.chip:hover {
+  border-color: color-mix(in srgb, var(--color-highlight) 45%, transparent);
+  color: var(--color-text-body);
+}
+.chipActive {
+  color: var(--color-text-body);
+  border-color: var(--color-highlight);
+  box-shadow: inset 0 0 10px color-mix(in srgb, var(--color-highlight) 14%, transparent);
+}
+
+.chipDot,
+.chipDotStale {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+.chipDot {
+  background: var(--color-highlight);
+  box-shadow: 0 0 6px var(--crt-glow-soft);
+}
+.chipDotStale {
+  background: transparent;
+  border: 1px solid var(--color-accent-amber);
+}
+
+.chipStatus {
+  font-size: 0.68rem;
+  padding: 0.05rem 0.4rem;
+  color: var(--color-highlight);
+  border: 1px solid color-mix(in srgb, var(--color-highlight) 35%, transparent);
+  border-radius: 2px;
+}
+.chipStatusStale {
+  font-size: 0.68rem;
+  padding: 0.05rem 0.4rem;
+  color: var(--color-accent-amber);
+  border: 1px solid color-mix(in srgb, var(--color-accent-amber) 35%, transparent);
+  border-radius: 2px;
+}
+
+/* ── active cluster header ── */
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  margin-bottom: 0.25rem;
+}
+.headDot,
+.headDotStale {
+  align-self: center;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+.headDot {
+  background: var(--color-highlight);
+  box-shadow: 0 0 6px var(--crt-glow-soft);
+}
+.headDotStale {
+  background: var(--color-accent-amber);
+}
+.headName {
+  font-size: 1rem;
+  color: var(--color-text-body);
+}
+.headRole {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+.meta {
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.3rem;
+}
+
+/* ── section + rule ── */
+.block {
+  margin-bottom: 1.4rem;
+}
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  margin-bottom: 0.7rem;
+}
+.rule {
+  flex: 1;
+  border-top: 1px solid color-mix(in srgb, var(--color-highlight) 16%, transparent);
+}
+
+/* ── grids ── */
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+}
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+
+/* ── panel ── */
+.panel {
+  padding: 0.85rem 1rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-highlight) 22%, transparent);
+  background: color-mix(in srgb, var(--color-highlight) 4%, transparent);
+  border-radius: 2px;
+}
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.panelLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+}
+.panelRight {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--color-accent-cyan);
+  font-variant-numeric: tabular-nums;
+}
+.panelHead .badge {
+  margin-left: auto;
+}
+
+.big {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+  font-size: 2.1rem;
+  line-height: 1;
+  color: var(--color-text-primary);
+  text-shadow: 0 0 8px var(--crt-glow-soft);
+  font-variant-numeric: tabular-nums;
+}
+.bigUnit {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  text-shadow: none;
+}
+.sub {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+  margin-bottom: 0.6rem;
+}
+
+/* ── badges ── */
+.badge {
+  font-size: 0.68rem;
+  padding: 0.08rem 0.45rem;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.badge_ok {
+  color: var(--color-highlight);
+  border: 1px solid color-mix(in srgb, var(--color-highlight) 40%, transparent);
+}
+.badge_warn {
+  color: var(--color-accent-amber);
+  border: 1px solid color-mix(in srgb, var(--color-accent-amber) 45%, transparent);
+}
+.badge_danger {
+  color: #ff6e63;
+  border: 1px solid color-mix(in srgb, #ff6e63 50%, transparent);
+}
+
+/* ── segmented bar ── */
+.bar {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+}
+.seg {
+  flex: 1;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--color-highlight) 12%, transparent);
+}
+.ok {
+  background: var(--color-highlight);
+  box-shadow: 0 0 5px var(--crt-glow-soft);
+}
+.warn {
+  background: var(--color-accent-amber);
+}
+.danger {
+  background: #ff6e63;
+}
+
+/* ── nodes ── */
+.nodes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.node {
+  display: grid;
+  grid-template-columns: 1rem 10rem auto 5rem auto 5rem;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+.node .bar {
+  width: 100%;
+  min-width: 60px;
+}
+.nodeName {
+  color: var(--color-text-body);
+}
+.nodeStat {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.nodeReady {
+  color: var(--color-highlight);
+}
+.nodeDown {
+  color: var(--color-accent-amber);
+}
+
+@media (max-width: 640px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .node {
+    grid-template-columns: 1rem 1fr auto;
+  }
+  .node .bar {
+    display: none;
+  }
+}

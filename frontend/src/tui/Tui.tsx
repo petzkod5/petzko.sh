@@ -14,6 +14,7 @@ import { About } from '@/sections/About'
 import { Contact } from '@/sections/Contact'
 import { Portfolio } from '@/sections/Portfolio'
 import { Stats } from '@/sections/Stats'
+import { System } from '@/sections/System'
 import { Breadcrumb } from './Breadcrumb'
 import { Help } from './Help'
 import { SignModal } from './SignModal'
@@ -51,6 +52,7 @@ const SECTIONS = [
   { name: 'resume', key: 'r', type: 'document', status: 'ready' },
   { name: 'contact', key: 'c', type: 'links', status: 'ready' },
   { name: 'stats', key: 's', type: 'metrics', status: 'soon' },
+  { name: 'system', key: 'y', type: 'telemetry', status: 'ready' },
 ] as const
 
 const CONTEXT = [
@@ -357,6 +359,7 @@ export function Tui({ building = false }: TuiProps) {
     }
     const section = SECTIONS.find((s) => s.name === v)
     if (section) jumpTo({ id: section.name, label: section.name })
+    else if (v === 'top') jumpTo({ id: 'system', label: 'system' }) // `:top` → system
     else if (v === 'admin') setShowAdmin(true)
     // unknown command: ignore
   }
@@ -493,6 +496,8 @@ export function Tui({ building = false }: TuiProps) {
             </Suspense>
           ) : current.id === 'stats' ? (
             <Stats />
+          ) : current.id === 'system' ? (
+            <System />
           ) : (
             <p className={styles.placeholder}>
               {current.label} — content coming soon. Press{' '}
