@@ -63,6 +63,28 @@ export default {
         return signGuestbook(env, req)
       }
 
+      // Public: site content — about, contacts, portfolio from D1 (60s CDN TTL).
+      if (method === 'GET' && pathname === '/api/content') {
+        const { results } = await env.DB.prepare(
+          "SELECT key, value FROM content WHERE key IN ('about','contacts','portfolio')",
+        ).all<{ key: string; value: string }>()
+        const out: Record<string, unknown> = {}
+        for (const row of results ?? []) {
+          try {
+            out[row.key] = JSON.parse(row.value)
+          } catch {
+            // skip malformed row
+          }
+        }
+        return new Response(JSON.stringify(out), {
+          status: 200,
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            'cache-control': 'public, max-age=60',
+          },
+        })
+      }
+
       // ── Admin (Cloudflare Access–gated) ──
       // Access enforces auth at the edge for /api/admin/*; we independently
       // verify the signed Access JWT here (defense in depth) and read identity.
@@ -79,6 +101,88 @@ export default {
         const id = await verifyAccess(req, env)
         if (!id) return json({ error: 'unauthenticated' }, 401)
         return Response.redirect(new URL('/?admin=1', req.url).toString(), 302)
+      }
+
+      // Admin: write site content (about / contacts / portfolio) to D1.
+      if (method === 'PUT' && pathname === '/api/admin/content') {
+        const id = await verifyAccess(req, env)
+        if (!id) return json({ error: 'unauthenticated' }, 401)
+
+        let body: { about?: unknown; contacts?: unknown; portfolio?: unknown }
+        try {
+          body = (await req.json()) as typeof body
+        } catch {
+          return json({ error: 'bad_request' }, 400)
+        }
+
+        const errs: string[] = []
+        if (body.about !== undefined && !validateAbout(body.about)) errs.push('about')
+        if (body.contacts !== undefined && !validateContacts(body.contacts)) errs.push('contacts')
+        if (body.portfolio !== undefined && !validatePortfolio(body.portfolio)) errs.push('portfolio')
+        if (errs.length) return json({ error: 'invalid', fields: errs }, 422)
+
+        const now = Date.now()
+        const entries: [string, unknown][] = []
+        if (body.about !== undefined) entries.push(['about', body.about])
+        if (body.contacts !== undefined) entries.push(['contacts', body.contacts])
+        if (body.portfolio !== undefined) entries.push(['portfolio', body.portfolio])
+
+        for (const [key, value] of entries) {
+          await env.DB.prepare(
+            `INSERT INTO content (key, value, updated_at) VALUES (?, ?, ?)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+          )
+            .bind(key, JSON.stringify(value), now)
+            .run()
+        }
+
+        return json({ ok: true })
+      }
+
+      // Admin: all guestbook rows (including unapproved) for moderation.
+      if (method === 'GET' && pathname === '/api/admin/guestbook') {
+        const id = await verifyAccess(req, env)
+        if (!id) return json({ error: 'unauthenticated' }, 401)
+        const { results } = await env.DB.prepare(
+          `SELECT id, name, message, country, created_at, approved
+             FROM guestbook
+            ORDER BY created_at DESC
+            LIMIT 200`,
+        ).all()
+        return json({ entries: results ?? [] })
+      }
+
+      // Admin: approve or hide a guestbook entry.
+      const gbPatchMatch = pathname.match(/^\/api\/admin\/guestbook\/(\d+)$/)
+      if (method === 'PATCH' && gbPatchMatch) {
+        const id = await verifyAccess(req, env)
+        if (!id) return json({ error: 'unauthenticated' }, 401)
+        const entryId = Number(gbPatchMatch[1])
+
+        let body: { approved?: unknown }
+        try {
+          body = (await req.json()) as typeof body
+        } catch {
+          return json({ error: 'bad_request' }, 400)
+        }
+        if (body.approved !== 0 && body.approved !== 1)
+          return json({ error: 'invalid' }, 422)
+
+        await env.DB.prepare('UPDATE guestbook SET approved = ? WHERE id = ?')
+          .bind(body.approved, entryId)
+          .run()
+        return json({ ok: true })
+      }
+
+      // Admin: delete a guestbook entry.
+      const gbDeleteMatch = pathname.match(/^\/api\/admin\/guestbook\/(\d+)$/)
+      if (method === 'DELETE' && gbDeleteMatch) {
+        const id = await verifyAccess(req, env)
+        if (!id) return json({ error: 'unauthenticated' }, 401)
+        const entryId = Number(gbDeleteMatch[1])
+
+        await env.DB.prepare('DELETE FROM guestbook WHERE id = ?').bind(entryId).run()
+        return json({ ok: true })
       }
 
       return json({ error: 'not_found' }, 404)
@@ -349,6 +453,51 @@ async function sha256Hex(input: string): Promise<string> {
   return [...new Uint8Array(digest)]
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
+}
+
+// ── Admin content validators ──────────────────────────────────────────────────
+// Mirror the shapes in frontend/src/admin/model.ts; deliberately simple —
+// validate presence + types + length caps so the DB never gets junk.
+
+function isStr(v: unknown, maxLen = 100_000): boolean {
+  return typeof v === 'string' && v.length <= maxLen
+}
+
+function validateAbout(x: unknown): boolean {
+  if (!x || typeof x !== 'object') return false
+  const o = x as Record<string, unknown>
+  return (
+    isStr(o.heading, 200) &&
+    isStr(o.avatar, 500) &&
+    isStr(o.avatarAlt, 200) &&
+    isStr(o.body, 20_000)
+  )
+}
+
+function validateContacts(x: unknown): boolean {
+  if (!Array.isArray(x) || x.length > 50) return false
+  return x.every(
+    (c) =>
+      c &&
+      typeof c === 'object' &&
+      isStr((c as Record<string, unknown>).type, 50) &&
+      isStr((c as Record<string, unknown>).url, 500) &&
+      isStr((c as Record<string, unknown>).description, 1000),
+  )
+}
+
+function validatePortfolio(x: unknown): boolean {
+  if (!Array.isArray(x) || x.length > 50) return false
+  return x.every(
+    (p) =>
+      p &&
+      typeof p === 'object' &&
+      isStr((p as Record<string, unknown>).type, 50) &&
+      isStr((p as Record<string, unknown>).name, 200) &&
+      isStr((p as Record<string, unknown>).url, 500) &&
+      isStr((p as Record<string, unknown>).company, 200) &&
+      isStr((p as Record<string, unknown>).description, 5_000),
+  )
 }
 
 function json(data: unknown, status = 200): Response {
