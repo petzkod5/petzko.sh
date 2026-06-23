@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/petzkod5/petzko.sh/compare/v1.14.0...v1.14.1) (2026-06-23)
+
+
+### Bug Fixes
+
+* **system:** label each node gauge as cpu [bar] value / mem [bar] value ([f0ab904](https://github.com/petzkod5/petzko.sh/commit/f0ab904e8fa20f69f931808ac6f04093a48baf21))
+
 # [1.14.0](https://github.com/petzkod5/petzko.sh/compare/v1.13.0...v1.14.0) (2026-06-23)
 
 
