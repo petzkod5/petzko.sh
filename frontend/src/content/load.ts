@@ -49,13 +49,41 @@ export function loadBundledContent(): SiteContent {
 }
 
 /** Fetch live content from D1 via the Worker. Returns null on any error so the
- *  caller can fall back to the bundled content. */
-export async function fetchSiteContent(signal?: AbortSignal): Promise<SiteContent | null> {
+ *  caller can fall back to the bundled content. The Worker omits any key whose
+ *  D1 row is missing or fails to parse, so the result is intentionally partial —
+ *  merge it over the bundled content with `mergeContent` before use. */
+export async function fetchSiteContent(
+  signal?: AbortSignal,
+): Promise<Partial<SiteContent> | null> {
   try {
     const res = await fetch('/api/content', { signal })
     if (!res.ok) return null
-    return (await res.json()) as SiteContent
+    const data = (await res.json()) as unknown
+    if (!data || typeof data !== 'object') return null
+    return data as Partial<SiteContent>
   } catch {
     return null
   }
+}
+
+/** Merge partial live content over a complete base, per key. A missing or
+ *  malformed section falls back to the base rather than crashing consumers. */
+export function mergeContent(
+  base: SiteContent,
+  live: Partial<SiteContent> | null,
+): SiteContent {
+  if (!live) return base
+  return {
+    about: isAbout(live.about) ? live.about : base.about,
+    contacts: Array.isArray(live.contacts) ? live.contacts : base.contacts,
+    portfolio: Array.isArray(live.portfolio) ? live.portfolio : base.portfolio,
+  }
+}
+
+function isAbout(x: unknown): x is SiteContent['about'] {
+  return (
+    !!x &&
+    typeof x === 'object' &&
+    typeof (x as Record<string, unknown>).body === 'string'
+  )
 }

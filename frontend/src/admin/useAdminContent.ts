@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { seedContent, type AdminContent, type AboutDoc, type ContactItem, type ProjectItem } from './model'
-import { fetchSiteContent } from '@/content/load'
+import { fetchSiteContent, mergeContent } from '@/content/load'
 import { putAdminContent } from '@/api/admin'
 
 // Keep an unsaved-draft recovery cache in localStorage so edits survive a page
@@ -57,18 +57,23 @@ export function useAdminContent(): AdminContentStore {
   const [saveError, setSaveError] = useState<string | null>(null)
 
   // Hydrate from D1 on mount. If there's a local draft (unsaved changes), keep
-  // it on top of the freshly fetched saved state.
+  // it on top of the freshly fetched saved state. Live content is merged per-key
+  // over the seed so a missing/malformed section falls back rather than breaking
+  // the editor.
   const hasDraft = useRef(loadDraft() !== null)
   useEffect(() => {
     const ctrl = new AbortController()
     fetchSiteContent(ctrl.signal).then((live) => {
       if (live) {
-        setSaved(live)
-        if (!hasDraft.current) setDraft(live)
+        const merged = mergeContent(seed, live)
+        setSaved(merged)
+        if (!hasDraft.current) setDraft(merged)
       }
       setLoading(false)
     })
     return () => ctrl.abort()
+    // seed is referentially stable (useMemo)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const dirty = useMemo(
