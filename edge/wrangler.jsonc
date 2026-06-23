@@ -25,6 +25,18 @@
   // zone on Cloudflare). `wrangler dev` ignores this and serves locally instead.
   "routes": [{ "pattern": "petzko.sh/api/*", "zone_name": "petzko.sh" }],
 
+  // Cloudflare Access (Zero Trust) config for the gated /api/admin/* routes.
+  // These are NOT secrets — they only identify the Access application — so it's
+  // safe to commit them. Fill both after creating a self-hosted Access app in
+  // the dashboard (Zero Trust → Access → Applications):
+  //   ACCESS_TEAM_DOMAIN — your team domain, e.g. https://petzko.cloudflareaccess.com
+  //   ACCESS_AUD         — the application's Audience (AUD) tag (a long hex id)
+  // Until both are set, the admin routes fail closed (always unauthenticated).
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "https://autumn-sunset-f4b7.cloudflareaccess.com",
+    "ACCESS_AUD": "1e31dd7121bd36d94363d92e96b341e0642504bb2b88e709765dcbd98ff8d5ba"
+  },
+
   // Workers Logs — structured logs/traces for debugging the deployed Worker.
   "observability": {
     "enabled": true,

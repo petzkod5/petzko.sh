@@ -1,0 +1,126 @@
+/* ── Admin section — Cloudflare Access–gated ──────────────────────────────── */
+
+.admin {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding: 1rem 0;
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+}
+
+.lock {
+  color: var(--color-highlight);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.title {
+  color: var(--color-text-body);
+}
+
+.tag {
+  margin-left: auto;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.line {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.gateBox,
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--color-highlight);
+  background: transparent;
+  border: 1px solid var(--color-highlight);
+  border-radius: 2px;
+  cursor: pointer;
+  text-decoration: none;
+  text-shadow: 0 0 6px var(--crt-glow-soft);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  background: var(--color-highlight);
+  color: var(--color-bg, #000);
+}
+
+.email {
+  color: var(--color-highlight);
+  text-shadow: 0 0 6px var(--crt-glow-soft);
+}
+
+.soon {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.signout {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+  text-decoration: underline;
+}
+
+.signout:hover {
+  opacity: 0.9;
+}
+
+.blink {
+  animation: softblink 1.6s steps(1) infinite;
+}
+
+@keyframes softblink {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  70.01%,
+  100% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lock,
+  .blink {
+    animation: none;
+  }
+}

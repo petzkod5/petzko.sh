@@ -20,6 +20,8 @@ Browser ─▶ petzko.sh
 | POST   | `/api/visit`     | bump page views + record the (hashed) unique visitor  |
 | GET    | `/api/guestbook` | recent signed entries (`?limit`, default 12, max 50)  |
 | POST   | `/api/guestbook` | sign an entry `{ name, message }` — rate-limited      |
+| GET    | `/api/admin/me`  | caller identity `{ email }` — **Access-gated** (401 if not) |
+| GET    | `/api/admin/login` | post-login bounce → 302 back to `/?admin=1`         |
 
 ## One-time setup
 
@@ -154,6 +156,40 @@ section's guest log viewer.
   uniques — no raw IP stored). Invisible Turnstile is the planned next layer.
 - Messages are stored raw and **escaped on render** (React) — no HTML/markup.
 - `country` is captured from `request.cf.country` (absent in local dev).
+
+## Admin panel (Cloudflare Access)
+
+The `:admin` command in the site opens an Access-gated admin section. Auth is
+**Cloudflare Access** (Zero Trust) in front of `/api/admin/*` — it authenticates
+the user at the edge and the Worker independently verifies the signed Access JWT
+(`verifyAccess` in `src/index.ts`: RS256 signature against the team JWKS, `aud`
+must match the app's AUD tag, and not expired). No passwords in code.
+
+**One-time dashboard setup** (Zero Trust → Access → Applications):
+
+1. **Add an application → Self-hosted.**
+2. **Application domain:** `petzko.sh`, **path:** `/api/admin` (covers `/api/admin/*`).
+3. **Identity provider:** email one-time PIN is simplest and edge-independent
+   (so login survives a homelab/cluster outage — the whole point of the admin
+   panel). Google/GitHub also work. Avoid backing it with an in-cluster IdP
+   (Authentik/Keycloak), which would couple login to the thing it's meant to
+   outlive.
+4. **Policy:** Allow → emails → your address.
+5. From the app's **Overview**, copy the **Audience (AUD) tag** and your **team
+   domain** (`https://<team>.cloudflareaccess.com`) into `wrangler.jsonc → vars`
+   (`ACCESS_AUD`, `ACCESS_TEAM_DOMAIN`). They're not secrets — safe to commit.
+6. `npm run types && npm run deploy`.
+
+Until those two vars are set the admin routes **fail closed** (always 401), so
+it's safe to ship the code before configuring Access.
+
+**Local dev:** there's no Access in front of `wrangler dev`, so set
+`ADMIN_DEV_BYPASS=1` in `.dev.vars` (gitignored) to exercise the flow — the
+Worker then treats unauthenticated requests as a `dev@localhost` admin. **Never**
+set this in production.
+
+**Sign-out:** the panel links to `/cdn-cgi/access/logout`, which clears the
+Access session cookie.
 
 ## Notes
 

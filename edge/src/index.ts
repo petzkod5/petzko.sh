@@ -12,6 +12,12 @@
 declare global {
   interface Env {
     IP_SALT?: string
+    // Local-only bypass for the Access-gated /api/admin/* routes — set in
+    // .dev.vars (gitignored) so `wrangler dev` can exercise the admin flow
+    // without Cloudflare Access in front. NEVER set in production: it disables
+    // authentication. (ACCESS_AUD / ACCESS_TEAM_DOMAIN come from wrangler.jsonc
+    // `vars`, so they're in the generated Env already.)
+    ADMIN_DEV_BYPASS?: string
   }
 }
 
@@ -55,6 +61,24 @@ export default {
       // Guest log — sign a new entry (the hidden `:sign` command posts here).
       if (method === 'POST' && pathname === '/api/guestbook') {
         return signGuestbook(env, req)
+      }
+
+      // ── Admin (Cloudflare Access–gated) ──
+      // Access enforces auth at the edge for /api/admin/*; we independently
+      // verify the signed Access JWT here (defense in depth) and read identity.
+      if (method === 'GET' && pathname === '/api/admin/me') {
+        const id = await verifyAccess(req, env)
+        if (!id) return json({ error: 'unauthenticated' }, 401)
+        return json({ email: id.email })
+      }
+
+      // Post-login bounce. Access gates this path, so reaching it with a valid
+      // JWT means the user just authenticated — send them back into the app
+      // with the admin section auto-opened (?admin=1).
+      if (method === 'GET' && pathname === '/api/admin/login') {
+        const id = await verifyAccess(req, env)
+        if (!id) return json({ error: 'unauthenticated' }, 401)
+        return Response.redirect(new URL('/?admin=1', req.url).toString(), 302)
       }
 
       return json({ error: 'not_found' }, 404)
@@ -204,6 +228,120 @@ const PROFANITY = ['fuck', 'shit', 'bitch', 'cunt', 'nigger', 'faggot', 'retard'
 function isProfane(s: string): boolean {
   const lower = s.toLowerCase()
   return PROFANITY.some((w) => lower.includes(w))
+}
+
+// ── Cloudflare Access (Zero Trust) JWT verification ───────────────────────────
+// Access sits in front of /api/admin/* and only lets authenticated requests
+// through, attaching a signed JWT (Cf-Access-Jwt-Assertion header + the
+// CF_Authorization cookie). We re-verify that JWT here — RS256 signature against
+// the team's rotating public keys, audience (this app's AUD tag), and expiry —
+// so the Worker never trusts the edge blindly. Returns the caller's identity, or
+// null when unauthenticated.
+
+interface AccessIdentity {
+  email: string
+  sub: string
+}
+
+// Cache the team's JWKS (public keys); they rotate, so re-fetch hourly.
+let accessKeys: { keys: Map<string, CryptoKey>; fetchedAt: number } | null = null
+const JWKS_TTL_MS = 60 * 60 * 1000
+
+async function accessJwks(env: Env): Promise<Map<string, CryptoKey>> {
+  if (accessKeys && Date.now() - accessKeys.fetchedAt < JWKS_TTL_MS) {
+    return accessKeys.keys
+  }
+  // `wrangler types` narrows committed vars to string-literal types (e.g. "" while
+  // unset), which collapse to `never` after a truthiness guard — widen to string.
+  const team = env.ACCESS_TEAM_DOMAIN as string
+  if (!team) throw new Error('ACCESS_TEAM_DOMAIN not configured')
+  const res = await fetch(`${team.replace(/\/$/, '')}/cdn-cgi/access/certs`)
+  if (!res.ok) throw new Error(`Access JWKS fetch failed: ${res.status}`)
+  const { keys: jwks } = (await res.json()) as { keys: (JsonWebKey & { kid: string })[] }
+  const keys = new Map<string, CryptoKey>()
+  for (const jwk of jwks) {
+    const key = await crypto.subtle.importKey(
+      'jwk',
+      jwk,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['verify'],
+    )
+    keys.set(jwk.kid, key)
+  }
+  accessKeys = { keys, fetchedAt: Date.now() }
+  return keys
+}
+
+async function verifyAccess(req: Request, env: Env): Promise<AccessIdentity | null> {
+  const token =
+    req.headers.get('Cf-Access-Jwt-Assertion') ?? readCookie(req, 'CF_Authorization')
+
+  // No token: in local `wrangler dev` there's no Access in front, so an explicit
+  // (gitignored, dev-only) bypass lets the flow be exercised. Never set in prod.
+  if (!token) {
+    if (env.ADMIN_DEV_BYPASS === '1') return { email: 'dev@localhost', sub: 'dev' }
+    return null
+  }
+
+  const parts = token.split('.')
+  if (parts.length !== 3) return null
+  const [rawHeader, rawPayload, rawSig] = parts
+
+  let header: { alg?: string; kid?: string }
+  let payload: { aud?: string | string[]; email?: string; sub?: string; exp?: number }
+  try {
+    header = JSON.parse(b64urlDecode(rawHeader))
+    payload = JSON.parse(b64urlDecode(rawPayload))
+  } catch {
+    return null
+  }
+  if (header.alg !== 'RS256' || !header.kid) return null
+
+  const key = (await accessJwks(env)).get(header.kid)
+  if (!key) return null
+
+  const ok = await crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5',
+    key,
+    b64urlBytes(rawSig),
+    new TextEncoder().encode(`${rawHeader}.${rawPayload}`),
+  )
+  if (!ok) return null
+
+  // Audience must include this app's AUD tag, and the token must not be expired.
+  const aud = env.ACCESS_AUD as string
+  const auds = Array.isArray(payload.aud) ? payload.aud : payload.aud ? [payload.aud] : []
+  if (!aud || !auds.includes(aud)) return null
+  const now = Math.floor(Date.now() / 1000)
+  if (typeof payload.exp === 'number' && payload.exp <= now) return null
+
+  return { email: payload.email ?? 'unknown', sub: payload.sub ?? '' }
+}
+
+function readCookie(req: Request, name: string): string | null {
+  const raw = req.headers.get('Cookie')
+  if (!raw) return null
+  for (const part of raw.split(';')) {
+    const eq = part.indexOf('=')
+    if (eq === -1) continue
+    if (part.slice(0, eq).trim() === name) return part.slice(eq + 1).trim()
+  }
+  return null
+}
+
+// base64url → bytes / UTF-8 string (JWT segments are base64url, no padding).
+function b64urlBytes(s: string): Uint8Array {
+  const b64 = s.replace(/-/g, '+').replace(/_/g, '/')
+  const pad = b64.length % 4 === 0 ? '' : '='.repeat(4 - (b64.length % 4))
+  const bin = atob(b64 + pad)
+  const out = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i)
+  return out
+}
+
+function b64urlDecode(s: string): string {
+  return new TextDecoder().decode(b64urlBytes(s))
 }
 
 async function sha256Hex(input: string): Promise<string> {

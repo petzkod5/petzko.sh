@@ -11,6 +11,7 @@ import { appVersion, buildEnv } from '@/config'
 import { useNavStack, type Layer } from '@/state/useNavStack'
 import { useTheme, type Theme } from '@/state/useTheme'
 import { About } from '@/sections/About'
+import { AdminPanel } from '@/sections/AdminPanel'
 import { Contact } from '@/sections/Contact'
 import { Portfolio } from '@/sections/Portfolio'
 import { Stats } from '@/sections/Stats'
@@ -196,6 +197,23 @@ export function Tui({ building = false }: TuiProps) {
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [pop, closeCmd])
+
+  // Returning from the Cloudflare Access login, the Worker bounces to `?admin=1`
+  // — open the admin section and strip the param so a refresh won't reopen it.
+  // Runs once the TUI is live (not during the build animation); jumpTo is stable.
+  useEffect(() => {
+    if (building) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('admin') !== '1') return
+    jumpTo({ id: 'admin', label: 'admin' })
+    params.delete('admin')
+    const qs = params.toString()
+    window.history.replaceState(
+      { petzkoNav: true },
+      '',
+      window.location.pathname + (qs ? `?${qs}` : ''),
+    )
+  }, [building, jumpTo])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -468,6 +486,8 @@ export function Tui({ building = false }: TuiProps) {
             </Suspense>
           ) : current.id === 'stats' ? (
             <Stats />
+          ) : current.id === 'admin' ? (
+            <AdminPanel />
           ) : (
             <p className={styles.placeholder}>
               {current.label} — content coming soon. Press{' '}
