@@ -1,3 +1,28 @@
+# [1.13.0](https://github.com/petzkod5/petzko.sh/compare/v1.12.0...v1.13.0) (2026-06-23)
+
+
+### Bug Fixes
+
+* atomic content upsert + clear stale draft cache ([bd1d125](https://github.com/petzkod5/petzko.sh/commit/bd1d125070885207868b7cb2b3bd7da830c1e0ea))
+* merge live content per-key over bundled fallback ([5b94418](https://github.com/petzkod5/petzko.sh/commit/5b9441892f83ae27c1da2a09b2b7e4100f139a1a))
+* portal admin overlay to body so CRT layers don't bleed over it ([6386680](https://github.com/petzkod5/petzko.sh/commit/6386680f48c430c039918a28b075b90863d1921c))
+
+
+### Features
+
+* admin panel UI, Phase 1 (localStorage-backed) ([7ae3dfe](https://github.com/petzkod5/petzko.sh/commit/7ae3dfe77b67efa6224a61a9d923f3ceaada0dcb))
+* **admin:** handle expired session on save + confirm reset-to-seed ([0edc789](https://github.com/petzkod5/petzko.sh/commit/0edc7899b359f2bcd19cc88bbad9171491ed2d8e))
+* **admin:** live markdown preview for the About body ([9f29567](https://github.com/petzkod5/petzko.sh/commit/9f29567168b5cdec1db25d9fe6852a731626fdca))
+* **admin:** surface which section a save was rejected for ([6ae9eaa](https://github.com/petzkod5/petzko.sh/commit/6ae9eaa531823aa23dae5521d33736c9a22c2630))
+* **edge:** content + admin Worker endpoints ([82b9c4c](https://github.com/petzkod5/petzko.sh/commit/82b9c4cbdfe3cb3c1e6701f8090125f2ef8c44a9))
+* **edge:** D1 content table + seed migrations ([907367d](https://github.com/petzkod5/petzko.sh/commit/907367d88803b8fe0637910810a1fe04fb8a93a8))
+* Phase 2 — D1 as content source of truth ([6e7a8d1](https://github.com/petzkod5/petzko.sh/commit/6e7a8d14a8fba6621959c5adbf074081cf85f9ea))
+
+
+### Performance Improvements
+
+* lazy-load the admin overlay ([a675e17](https://github.com/petzkod5/petzko.sh/commit/a675e17e21b7881e865ba148b254a5aebabc17e6))
+
 # [1.12.0](https://github.com/petzkod5/petzko.sh/compare/v1.11.3...v1.12.0) (2026-06-23)
 
 
