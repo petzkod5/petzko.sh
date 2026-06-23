@@ -8,7 +8,7 @@ clusterId: rivendell
 image:
   # Promoted manually: bump this to the release you want live in prod, then
   # commit. (Not touched by semantic-release.)
-  tag: "1.15.0"
+  tag: "1.18.0"
 
 # backend.enabled MUST move in lockstep with image.tag: the resume-proxy image
 # only exists from v1.4.0 onward, and the frontend stopped baking the resume PDF
