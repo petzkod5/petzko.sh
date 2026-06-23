@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/petzkod5/petzko.sh/compare/v1.22.0...v1.23.0) (2026-06-23)
+
+
+### Features
+
+* **shell:** psh — fake shell mode (:shell / Shift+S) ([10cd3cf](https://github.com/petzkod5/petzko.sh/commit/10cd3cfe4156bb7c764cffe9c9d083061e0b53b8))
+
 # [1.22.0](https://github.com/petzkod5/petzko.sh/compare/v1.21.0...v1.22.0) (2026-06-23)
 
 
