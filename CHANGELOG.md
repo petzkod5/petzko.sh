@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/petzkod5/petzko.sh/compare/v1.20.0...v1.21.0) (2026-06-23)
+
+
+### Features
+
+* **chart:** structured stdout logging for the collector ([ec4408b](https://github.com/petzkod5/petzko.sh/commit/ec4408b086f7af0cd120cfd0aa343ee0d6902b91))
+
 # [1.20.0](https://github.com/petzkod5/petzko.sh/compare/v1.19.0...v1.20.0) (2026-06-23)
 
 
