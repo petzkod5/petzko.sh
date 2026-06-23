@@ -22,6 +22,8 @@ Browser ─▶ petzko.sh
 | POST   | `/api/guestbook` | sign an entry `{ name, message }` — rate-limited      |
 | GET    | `/api/admin/me`  | caller identity `{ email }` — **Access-gated** (401 if not) |
 | GET    | `/api/admin/login` | post-login bounce → 302 back to `/?admin=1`         |
+| GET    | `/api/telemetry` | latest cluster snapshots `{ clusters, fleet }` — cached 30s |
+| POST   | `/api/telemetry/ingest` | a cluster collector pushes its snapshot — **per-cluster bearer token** |
 
 ## One-time setup
 
@@ -48,6 +50,13 @@ npm run migrate:local       # the local wrangler-dev sandbox (separate copy)
 # 6. set the IP hashing salt (used to count unique visitors without storing IPs)
 npx wrangler secret put IP_SALT      # paste a long random string for production
 echo 'IP_SALT=some-local-dev-salt' >> .dev.vars   # local-only value (gitignored)
+
+# 7. set the telemetry ingest tokens — a JSON map of {cluster_id: token} so each
+#    cluster authenticates with its own token (add a cluster = add a map entry).
+#    Generate one per cluster with `openssl rand -hex 32`; mirror each as a k8s
+#    Secret in that cluster's collector.
+npx wrangler secret put TELEMETRY_TOKENS   # e.g. {"rivendell":"<token>"}
+echo 'TELEMETRY_TOKENS={"rivendell":"dev-telemetry-token"}' >> .dev.vars  # local-only
 ```
 
 ## Local development

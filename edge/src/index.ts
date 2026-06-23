@@ -18,6 +18,11 @@ declare global {
     // authentication. (ACCESS_AUD / ACCESS_TEAM_DOMAIN come from wrangler.jsonc
     // `vars`, so they're in the generated Env already.)
     ADMIN_DEV_BYPASS?: string
+    // Per-cluster ingest auth for /api/telemetry/ingest. JSON map of
+    // {cluster_id: token} so adding a cluster is one map entry. Set out-of-band
+    // via `wrangler secret put TELEMETRY_TOKENS`; mirrored as a k8s Secret in
+    // each cluster's collector. Never in git.
+    TELEMETRY_TOKENS?: string
   }
 }
 
@@ -83,6 +88,18 @@ export default {
             'cache-control': 'public, max-age=60',
           },
         })
+      }
+
+      // Public: live cluster telemetry — latest snapshot per cluster (fleet
+      // shape), served cached. Multi-cluster ready: one row per cluster_id.
+      if (method === 'GET' && pathname === '/api/telemetry') {
+        return readTelemetry(env)
+      }
+
+      // Ingest: a cluster's collector pushes its sanitized snapshot here. Machine
+      // auth (per-cluster bearer token), NOT Cloudflare Access (non-interactive).
+      if (method === 'POST' && pathname === '/api/telemetry/ingest') {
+        return ingestTelemetry(env, req)
       }
 
       // ── Admin (Cloudflare Access–gated) ──
@@ -335,6 +352,234 @@ const PROFANITY = ['fuck', 'shit', 'bitch', 'cunt', 'nigger', 'faggot', 'retard'
 function isProfane(s: string): boolean {
   const lower = s.toLowerCase()
   return PROFANITY.some((w) => lower.includes(w))
+}
+
+// ── Live cluster telemetry ────────────────────────────────────────────────────
+// Each cluster's in-cluster collector POSTs a curated, sanitized snapshot to
+// /api/telemetry/ingest (machine auth, per-cluster token). We keep the latest
+// snapshot per cluster in D1 (one row per cluster_id) and serve them together as
+// a fleet — so adding a cluster needs no schema/API change. Reads compute a
+// per-cluster `stale` flag, so a downed cluster shows offline while the rest
+// stay live (and the site keeps working off the bundled/last-known data).
+
+// A snapshot older than this is considered offline in the read response.
+const TELEMETRY_STALE_MS = 150_000
+// Reject ingests whose generated_at drifts further than this from now (replay /
+// clock-skew guard).
+const TELEMETRY_MAX_SKEW_MS = 120_000
+// Hard cap on accepted ingest body size.
+const TELEMETRY_MAX_BYTES = 16_384
+
+async function readTelemetry(env: Env): Promise<Response> {
+  const { results } = await env.DB.prepare(
+    'SELECT cluster_id, role, value, updated_at FROM telemetry',
+  ).all<{ cluster_id: string; role: string; value: string; updated_at: number }>()
+
+  const now = Date.now()
+  const clusters: Record<string, unknown>[] = []
+  for (const row of results ?? []) {
+    let snapshot: Record<string, unknown>
+    try {
+      snapshot = JSON.parse(row.value) as Record<string, unknown>
+    } catch {
+      continue // skip a malformed row rather than failing the whole read
+    }
+    clusters.push({
+      cluster_id: row.cluster_id,
+      role: row.role,
+      stale: now - row.updated_at > TELEMETRY_STALE_MS,
+      updated_at: row.updated_at,
+      ...snapshot,
+    })
+  }
+
+  // Fleet rollup — sum COUNTS only; never average utilization across clusters
+  // of different sizes (it's meaningless). Utilization stays per-cluster.
+  const online = clusters.filter((c) => !c.stale)
+  const fleet = {
+    clusters_total: clusters.length,
+    clusters_online: online.length,
+    nodes: sumField(clusters, ['cluster', 'nodes_total']),
+    pods: sumField(clusters, ['workloads', 'pods_running']),
+  }
+
+  return new Response(JSON.stringify({ generated_at: now, clusters, fleet }), {
+    status: 200,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'public, max-age=30',
+    },
+  })
+}
+
+// Sum a nested numeric field across cluster snapshots (missing/non-number → 0).
+function sumField(clusters: Record<string, unknown>[], path: [string, string]): number {
+  let total = 0
+  for (const c of clusters) {
+    const group = c[path[0]] as Record<string, unknown> | undefined
+    const v = group?.[path[1]]
+    if (typeof v === 'number' && Number.isFinite(v)) total += v
+  }
+  return total
+}
+
+async function ingestTelemetry(env: Env, req: Request): Promise<Response> {
+  // Body-size cap before parsing.
+  const raw = await req.text()
+  if (raw.length > TELEMETRY_MAX_BYTES) return json({ error: 'too_large' }, 413)
+
+  let body: Record<string, unknown>
+  try {
+    body = JSON.parse(raw) as Record<string, unknown>
+  } catch {
+    return json({ error: 'bad_request' }, 400)
+  }
+
+  const clusterId = typeof body.cluster_id === 'string' ? body.cluster_id : ''
+  if (!clusterId) return json({ error: 'bad_request' }, 400)
+
+  // Per-cluster auth: the token presented must match the one registered for the
+  // claimed cluster_id (so one cluster's token can't spoof another's metrics).
+  let tokens: Record<string, string> = {}
+  try {
+    tokens = JSON.parse(env.TELEMETRY_TOKENS ?? '{}') as Record<string, string>
+  } catch {
+    console.error(JSON.stringify({ level: 'error', message: 'TELEMETRY_TOKENS not valid JSON' }))
+  }
+  const expected = tokens[clusterId]
+  const presented = bearer(req)
+  if (!expected || !presented || !timingSafeEqual(presented, expected)) {
+    return json({ error: 'unauthenticated' }, 401)
+  }
+
+  // Replay / clock-skew guard.
+  const generatedAt = typeof body.generated_at === 'number' ? body.generated_at : 0
+  if (!generatedAt || Math.abs(Date.now() - generatedAt) > TELEMETRY_MAX_SKEW_MS) {
+    return json({ error: 'stale_or_skewed' }, 422)
+  }
+
+  const snapshot = sanitizeSnapshot(body)
+  if (!snapshot) return json({ error: 'invalid' }, 422)
+
+  const role = body.role === 'primary' ? 'primary' : 'replica'
+  await env.DB.prepare(
+    `INSERT INTO telemetry (cluster_id, role, value, updated_at) VALUES (?, ?, ?, ?)
+     ON CONFLICT(cluster_id) DO UPDATE SET role=excluded.role, value=excluded.value, updated_at=excluded.updated_at`,
+  )
+    .bind(clusterId, role, JSON.stringify(snapshot), Date.now())
+    .run()
+
+  return json({ ok: true })
+}
+
+// Read a Bearer token from the Authorization header.
+function bearer(req: Request): string | null {
+  const h = req.headers.get('Authorization') ?? ''
+  const m = h.match(/^Bearer\s+(.+)$/i)
+  return m ? m[1].trim() : null
+}
+
+// Constant-time string compare (avoids leaking token length/contents via timing).
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}
+
+// Rebuild a clean snapshot from known fields only — drops anything unexpected,
+// clamps numbers, caps array/string sizes. The collector already sanitizes
+// in-cluster; this is defense in depth at the trust boundary.
+interface TelemetrySnapshot {
+  cluster: {
+    k8s_version: string
+    talos_version: string
+    uptime_seconds: number
+    nodes_ready: number
+    nodes_total: number
+  }
+  resources: {
+    cpu_used_cores: number
+    cpu_total_cores: number
+    mem_used_bytes: number
+    mem_total_bytes: number
+    storage_used_bytes?: number
+    storage_total_bytes?: number
+  }
+  workloads: { pods_running: number; pods_total: number; namespaces: number }
+  argocd?: { apps_synced: number; apps_total: number; apps_healthy: number }
+  nodes: { name: string; cpu_pct: number; mem_pct: number; ready: boolean }[]
+}
+
+function sanitizeSnapshot(body: Record<string, unknown>): TelemetrySnapshot | null {
+  const cluster = obj(body.cluster)
+  const resources = obj(body.resources)
+  const workloads = obj(body.workloads)
+  if (!cluster || !resources || !workloads) return null
+
+  const out: TelemetrySnapshot = {
+    cluster: {
+      k8s_version: str(cluster.k8s_version, 40),
+      talos_version: str(cluster.talos_version, 40),
+      uptime_seconds: num(cluster.uptime_seconds),
+      nodes_ready: num(cluster.nodes_ready),
+      nodes_total: num(cluster.nodes_total),
+    },
+    resources: {
+      cpu_used_cores: num(resources.cpu_used_cores),
+      cpu_total_cores: num(resources.cpu_total_cores),
+      mem_used_bytes: num(resources.mem_used_bytes),
+      mem_total_bytes: num(resources.mem_total_bytes),
+    },
+    workloads: {
+      pods_running: num(workloads.pods_running),
+      pods_total: num(workloads.pods_total),
+      namespaces: num(workloads.namespaces),
+    },
+    nodes: Array.isArray(body.nodes)
+      ? body.nodes.slice(0, 16).map((n) => {
+          const node = obj(n) ?? {}
+          return {
+            name: str(node.name, 40),
+            cpu_pct: clampPct(node.cpu_pct),
+            mem_pct: clampPct(node.mem_pct),
+            ready: Boolean(node.ready),
+          }
+        })
+      : [],
+  }
+
+  // Storage is optional (depends on Longhorn metrics being scraped).
+  if (typeof resources.storage_total_bytes === 'number') {
+    out.resources.storage_used_bytes = num(resources.storage_used_bytes)
+    out.resources.storage_total_bytes = num(resources.storage_total_bytes)
+  }
+
+  // ArgoCD is optional (depends on its ServiceMonitor being enabled).
+  const argocd = obj(body.argocd)
+  if (argocd) {
+    out.argocd = {
+      apps_synced: num(argocd.apps_synced),
+      apps_total: num(argocd.apps_total),
+      apps_healthy: num(argocd.apps_healthy),
+    }
+  }
+
+  return out
+}
+
+function obj(v: unknown): Record<string, unknown> | null {
+  return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : null
+}
+function str(v: unknown, max: number): string {
+  return typeof v === 'string' ? v.slice(0, max) : ''
+}
+function num(v: unknown): number {
+  return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : 0
+}
+function clampPct(v: unknown): number {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return 0
+  return Math.max(0, Math.min(100, Math.round(v)))
 }
 
 // ── Cloudflare Access (Zero Trust) JWT verification ───────────────────────────
