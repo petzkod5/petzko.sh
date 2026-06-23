@@ -21,6 +21,14 @@
     }
   ],
 
+  // Durable Object: the TelemetryHub fans out live telemetry to WebSocket
+  // clients (env.TELEMETRY_HUB). SQLite-backed class so it runs on the free
+  // Workers plan; the object itself is in-memory + WebSocket hibernation.
+  "durable_objects": {
+    "bindings": [{ "name": "TELEMETRY_HUB", "class_name": "TelemetryHub" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["TelemetryHub"] }],
+
   // Production route: attaches the Worker to /api/* on the petzko.sh zone (your
   // zone on Cloudflare). `wrangler dev` ignores this and serves locally instead.
   "routes": [{ "pattern": "petzko.sh/api/*", "zone_name": "petzko.sh" }],

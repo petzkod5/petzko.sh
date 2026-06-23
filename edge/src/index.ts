@@ -26,8 +26,76 @@ declare global {
   }
 }
 
+// ── TelemetryHub (Durable Object) ─────────────────────────────────────────────
+// A dumb fan-out relay: the Worker validates + persists ingests (D1 is the source
+// of truth), then forwards the assembled fleet here; this object broadcasts it to
+// every connected WebSocket. Pure in-memory + WebSocket hibernation — no storage.
+// One instance (idFromName("fleet")) coordinates all live viewers.
+const HUB_MAX_SOCKETS = 200
+
+export class TelemetryHub {
+  private ctx: DurableObjectState
+  private last: string | null = null
+
+  constructor(ctx: DurableObjectState) {
+    this.ctx = ctx
+  }
+
+  async fetch(req: Request): Promise<Response> {
+    const url = new URL(req.url)
+
+    // Browser opens the live stream.
+    if (url.pathname === '/connect') {
+      if (req.headers.get('Upgrade') !== 'websocket') {
+        return new Response('expected websocket', { status: 426 })
+      }
+      if (this.ctx.getWebSockets().length >= HUB_MAX_SOCKETS) {
+        return new Response('too many connections', { status: 503 })
+      }
+      const pair = new WebSocketPair()
+      const [client, server] = [pair[0], pair[1]]
+      this.ctx.acceptWebSocket(server) // hibernation API
+      if (this.last) {
+        try {
+          server.send(this.last) // seed the new client with the current fleet
+        } catch {
+          /* ignore */
+        }
+      }
+      return new Response(null, { status: 101, webSocket: client })
+    }
+
+    // Worker pushes a new fleet payload to broadcast.
+    if (url.pathname === '/broadcast' && req.method === 'POST') {
+      this.last = await req.text()
+      for (const ws of this.ctx.getWebSockets()) {
+        try {
+          ws.send(this.last)
+        } catch {
+          /* drop a broken socket */
+        }
+      }
+      return new Response('ok')
+    }
+
+    return new Response('not found', { status: 404 })
+  }
+
+  // Hibernation handlers — we don't expect client→server messages; just keep the
+  // socket alive and clean up on close.
+  async webSocketMessage(): Promise<void> {}
+  async webSocketClose(ws: WebSocket): Promise<void> {
+    try {
+      ws.close()
+    } catch {
+      /* already closed */
+    }
+  }
+  async webSocketError(): Promise<void> {}
+}
+
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url)
     const pathname = url.pathname
     const method = req.method
@@ -91,15 +159,28 @@ export default {
       }
 
       // Public: live cluster telemetry — latest snapshot per cluster (fleet
-      // shape), served cached. Multi-cluster ready: one row per cluster_id.
+      // shape), served cached. The poll fallback for clients without WebSocket.
       if (method === 'GET' && pathname === '/api/telemetry') {
-        return readTelemetry(env)
+        return new Response(await buildFleet(env), {
+          status: 200,
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            'cache-control': 'public, max-age=30',
+          },
+        })
+      }
+
+      // Public: live telemetry stream — WebSocket fan-out via the TelemetryHub
+      // Durable Object. Updates are pushed the instant the collector ingests.
+      if (method === 'GET' && pathname === '/api/telemetry/stream') {
+        const stub = env.TELEMETRY_HUB.get(env.TELEMETRY_HUB.idFromName('fleet'))
+        return stub.fetch('https://hub/connect', req)
       }
 
       // Ingest: a cluster's collector pushes its sanitized snapshot here. Machine
       // auth (per-cluster bearer token), NOT Cloudflare Access (non-interactive).
       if (method === 'POST' && pathname === '/api/telemetry/ingest') {
-        return ingestTelemetry(env, req)
+        return ingestTelemetry(env, req, ctx)
       }
 
       // ── Admin (Cloudflare Access–gated) ──
@@ -370,7 +451,9 @@ const TELEMETRY_MAX_SKEW_MS = 120_000
 // Hard cap on accepted ingest body size.
 const TELEMETRY_MAX_BYTES = 16_384
 
-async function readTelemetry(env: Env): Promise<Response> {
+// Assemble the current fleet payload (the {generated_at, clusters, fleet} shape)
+// from D1. Shared by the poll endpoint, the WebSocket broadcast, and cold start.
+async function buildFleet(env: Env): Promise<string> {
   const { results } = await env.DB.prepare(
     'SELECT cluster_id, role, value, updated_at FROM telemetry',
   ).all<{ cluster_id: string; role: string; value: string; updated_at: number }>()
@@ -403,13 +486,7 @@ async function readTelemetry(env: Env): Promise<Response> {
     pods: sumField(clusters, ['workloads', 'pods_running']),
   }
 
-  return new Response(JSON.stringify({ generated_at: now, clusters, fleet }), {
-    status: 200,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'public, max-age=30',
-    },
-  })
+  return JSON.stringify({ generated_at: now, clusters, fleet })
 }
 
 // Sum a nested numeric field across cluster snapshots (missing/non-number → 0).
@@ -423,7 +500,11 @@ function sumField(clusters: Record<string, unknown>[], path: [string, string]): 
   return total
 }
 
-async function ingestTelemetry(env: Env, req: Request): Promise<Response> {
+async function ingestTelemetry(
+  env: Env,
+  req: Request,
+  ctx: ExecutionContext,
+): Promise<Response> {
   // Body-size cap before parsing.
   const raw = await req.text()
   if (raw.length > TELEMETRY_MAX_BYTES) return json({ error: 'too_large' }, 413)
@@ -468,6 +549,20 @@ async function ingestTelemetry(env: Env, req: Request): Promise<Response> {
   )
     .bind(clusterId, role, JSON.stringify(snapshot), Date.now())
     .run()
+
+  // Fan out the updated fleet to live WebSocket clients via the hub (best-effort;
+  // the poll endpoint + D1 are the source of truth, so don't fail ingest on it).
+  ctx.waitUntil(
+    (async () => {
+      try {
+        const fleet = await buildFleet(env)
+        const stub = env.TELEMETRY_HUB.get(env.TELEMETRY_HUB.idFromName('fleet'))
+        await stub.fetch('https://hub/broadcast', { method: 'POST', body: fleet })
+      } catch (err) {
+        console.error(JSON.stringify({ level: 'error', message: 'hub broadcast failed', detail: String(err) }))
+      }
+    })(),
+  )
 
   return json({ ok: true })
 }
