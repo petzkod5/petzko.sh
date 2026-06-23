@@ -25,6 +25,7 @@ export interface ClusterSnapshot {
   workloads: { pods_running: number; pods_total: number; namespaces: number }
   argocd?: { apps_synced: number; apps_total: number; apps_healthy: number }
   nodes: { name: string; cpu_pct: number; mem_pct: number; ready: boolean }[]
+  services?: string[]
 }
 
 export interface FleetRollup {

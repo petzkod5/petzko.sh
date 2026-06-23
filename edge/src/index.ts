@@ -509,6 +509,7 @@ interface TelemetrySnapshot {
   workloads: { pods_running: number; pods_total: number; namespaces: number }
   argocd?: { apps_synced: number; apps_total: number; apps_healthy: number }
   nodes: { name: string; cpu_pct: number; mem_pct: number; ready: boolean }[]
+  services?: string[]
 }
 
 function sanitizeSnapshot(body: Record<string, unknown>): TelemetrySnapshot | null {
@@ -563,6 +564,14 @@ function sanitizeSnapshot(body: Record<string, unknown>): TelemetrySnapshot | nu
       apps_total: num(argocd.apps_total),
       apps_healthy: num(argocd.apps_healthy),
     }
+  }
+
+  // Services manifest is optional (depends on ArgoCD metrics). Cap count + length.
+  if (Array.isArray(body.services)) {
+    out.services = body.services
+      .filter((s): s is string => typeof s === 'string')
+      .slice(0, 100)
+      .map((s) => s.slice(0, 60))
   }
 
   return out

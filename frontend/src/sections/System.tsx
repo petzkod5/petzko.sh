@@ -201,6 +201,19 @@ function ClusterView({ c }: { c: ClusterSnapshot }) {
           </div>
         </Section>
       )}
+
+      {c.services && c.services.length > 0 && (
+        <Section label={`SERVICES [${c.services.length}]`}>
+          <div className={styles.services}>
+            {c.services.map((name) => (
+              <span className={styles.service} key={name}>
+                <span className={styles.serviceMark}>▸</span>
+                {name}
+              </span>
+            ))}
+          </div>
+        </Section>
+      )}
     </>
   )
 }
