@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/petzkod5/petzko.sh/compare/v1.16.0...v1.17.0) (2026-06-23)
+
+
+### Features
+
+* **system:** :uptime command + cluster load average ([48867ba](https://github.com/petzkod5/petzko.sh/commit/48867ba8bb8d82799fd896543f2adb7132ffecc8))
+
 # [1.16.0](https://github.com/petzkod5/petzko.sh/compare/v1.15.0...v1.16.0) (2026-06-23)
 
 
