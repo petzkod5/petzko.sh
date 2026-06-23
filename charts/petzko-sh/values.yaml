@@ -19,6 +19,12 @@ fullnameOverride: ""
 # Written into /config.js at container start (shown as "Build:" in the UI).
 buildEnv: dev
 
+# Cluster identity, written into /config.js at container start — names the cluster
+# serving this page (drives the ":system" / ":neofetch" "serving you" highlight,
+# and reflects the active origin during a multi-cluster failover). Set per-cluster
+# in the environment overlays.
+clusterId: ""
+
 # Container listens on 8080 (non-root nginx); Service fronts it on 80.
 containerPort: 8080
 

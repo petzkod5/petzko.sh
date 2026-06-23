@@ -1,6 +1,8 @@
 # ── Staging overlay ───────────────────────────────────────────────────────────
 # Internal-only: HTTP via the base Traefik service (.225) on the 'web' listener.
 buildEnv: staging
+# Served from the homelab cluster.
+clusterId: rivendell
 
 image:
   # Auto-bumped to the latest release by semantic-release on each release

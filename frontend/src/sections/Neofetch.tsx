@@ -1,5 +1,6 @@
 import { useTelemetry } from '@/state/useTelemetry'
 import type { ClusterSnapshot } from '@/api/telemetry'
+import { servingCluster } from '@/config'
 import styles from './Neofetch.module.css'
 
 // Rivendell — mountains mirrored in the valley water, under the evening star.
@@ -58,6 +59,7 @@ function Facts({ c }: { c: ClusterSnapshot }) {
     <div className={styles.facts}>
       <div className={styles.title}>
         <span className={styles.user}>petzko</span>@<span className={styles.host}>{c.cluster_id}</span>
+        {c.cluster_id === servingCluster && <span className={styles.serving}>(serving you)</span>}
         {c.stale && <span className={styles.stale}>(stale)</span>}
       </div>
       <div className={styles.sep} aria-hidden="true" />

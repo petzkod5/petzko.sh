@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useTelemetry } from '@/state/useTelemetry'
 import type { ClusterSnapshot } from '@/api/telemetry'
+import { servingCluster } from '@/config'
 import styles from './System.module.css'
 
 type Tone = 'ok' | 'warn' | 'danger'
@@ -229,11 +230,15 @@ export function System() {
   }, [])
 
   const clusters = data?.clusters ?? []
+  // Default to the cluster actually serving this page, then the primary, then any.
   const active =
     clusters.find((c) => c.cluster_id === selected) ??
+    clusters.find((c) => c.cluster_id === servingCluster) ??
     clusters.find((c) => c.role === 'primary') ??
     clusters[0] ??
     null
+  // The serving cluster is reporting telemetry, so we can highlight its card.
+  const servingInFleet = clusters.some((c) => c.cluster_id === servingCluster)
 
   return (
     <div className={styles.system}>
@@ -269,17 +274,28 @@ export function System() {
                 >
                   <span className={c.stale ? styles.chipDotStale : styles.chipDot} aria-hidden="true" />
                   {c.cluster_id}
-                  <span className={c.stale ? styles.chipStatusStale : styles.chipStatus}>
-                    {c.stale ? 'offline' : 'connected'}
-                  </span>
+                  {c.cluster_id === servingCluster ? (
+                    <span className={styles.chipServing}>serving you</span>
+                  ) : (
+                    <span className={c.stale ? styles.chipStatusStale : styles.chipStatus}>
+                      {c.stale ? 'offline' : 'connected'}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
+
+            {servingCluster && !servingInFleet && (
+              <div className={styles.servingNote}>● serving you: {servingCluster}</div>
+            )}
 
             <div className={styles.head}>
               <span className={active.stale ? styles.headDotStale : styles.headDot} aria-hidden="true" />
               <span className={styles.headName}>{active.cluster_id}</span>
               <span className={styles.headRole}>{active.role}</span>
+              {active.cluster_id === servingCluster && (
+                <span className={styles.headServing}>● serving you</span>
+              )}
             </div>
             <div className={styles.meta}>
               talos {active.cluster.talos_version || '—'} · k8s {active.cluster.k8s_version || '—'} ·{' '}

@@ -7,9 +7,13 @@
 set -eu
 
 : "${BUILD_ENV:=prod}"
+# Cluster serving this page (drives the "serving you" highlight). Empty unless
+# set per-cluster via the Helm chart.
+: "${CLUSTER_ID:=}"
 # Written to a writable tmpfs (the container root FS is read-only); nginx
 # serves /config.js from here via an alias.
 conf="/tmp/config.js"
 
-printf 'window.__APP_ENV__ = { buildEnv: "%s" };\n' "$BUILD_ENV" > "$conf"
-echo "runtime-config: buildEnv=${BUILD_ENV}"
+printf 'window.__APP_ENV__ = { buildEnv: "%s", clusterId: "%s" };\n' \
+  "$BUILD_ENV" "$CLUSTER_ID" > "$conf"
+echo "runtime-config: buildEnv=${BUILD_ENV} clusterId=${CLUSTER_ID}"

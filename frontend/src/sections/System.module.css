@@ -111,6 +111,13 @@
   border: 1px solid color-mix(in srgb, var(--color-accent-amber) 35%, transparent);
   border-radius: 2px;
 }
+.chipServing {
+  font-size: 0.68rem;
+  padding: 0.05rem 0.4rem;
+  color: var(--color-accent-ink, #04140a);
+  background: var(--color-highlight);
+  border-radius: 2px;
+}
 
 /* ── active cluster header ── */
 .head {
@@ -143,6 +150,16 @@
   text-transform: uppercase;
   color: var(--color-text-secondary);
   opacity: 0.7;
+}
+.headServing {
+  font-size: 0.72rem;
+  color: var(--color-highlight);
+  text-shadow: 0 0 6px var(--crt-glow-soft);
+}
+.servingNote {
+  font-size: 0.82rem;
+  color: var(--color-highlight);
+  margin-bottom: 1.1rem;
 }
 .meta {
   font-size: 0.82rem;

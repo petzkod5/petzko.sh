@@ -38,6 +38,12 @@
 .host {
   color: var(--color-highlight);
 }
+.serving {
+  margin-left: 0.5rem;
+  font-size: 0.74rem;
+  color: var(--color-highlight);
+  text-shadow: 0 0 6px var(--crt-glow-soft);
+}
 .stale {
   margin-left: 0.5rem;
   font-size: 0.74rem;

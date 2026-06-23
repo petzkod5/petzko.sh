@@ -17,8 +17,9 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       annotations:
-        # Roll pods when the BUILD_ENV changes even on a mutable image tag.
+        # Roll pods when the BUILD_ENV / cluster id changes even on a mutable tag.
         petzko.sh/build-env: {{ .Values.buildEnv | quote }}
+        petzko.sh/cluster-id: {{ .Values.clusterId | quote }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -42,6 +43,8 @@ spec:
           env:
             - name: BUILD_ENV
               value: {{ .Values.buildEnv | quote }}
+            - name: CLUSTER_ID
+              value: {{ .Values.clusterId | quote }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:

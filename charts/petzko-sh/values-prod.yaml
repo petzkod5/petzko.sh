@@ -2,6 +2,8 @@
 # Public: HTTPS via the traefik-external service (.226) on the 'websecure'
 # listener, using the petzko.sh wildcard cert already wired into that listener.
 buildEnv: prod
+# Served from the homelab cluster.
+clusterId: rivendell
 
 image:
   # Promoted manually: bump this to the release you want live in prod, then
