@@ -8,23 +8,10 @@ import {
   SiInstagram,
   SiX,
 } from 'react-icons/si'
-// LinkedIn isn't in simple-icons (brand policy) — use the FontAwesome brand.
 import { FaLinkedin, FaPen } from 'react-icons/fa6'
-import { parse } from 'yaml'
-import contactsRaw from '../content/contacts.yaml?raw'
+import { useSiteContent } from '@/state/ContentProvider'
 import { useGridNav } from './useGridNav'
 import styles from './Contact.module.css'
-
-interface ContactItem {
-  type: string
-  url: string
-  description?: string
-  click?: boolean
-  newTab?: boolean
-  /** true → clicking/Enter copies `url` to the clipboard instead of opening it
-   *  (e.g. Discord, which has no add-by-username link). */
-  copy?: boolean
-}
 
 const ICONS: Record<string, IconType> = {
   instagram: SiInstagram,
@@ -40,10 +27,6 @@ const ICONS: Record<string, IconType> = {
 
 const iconFor = (type: string): IconType => ICONS[type.toLowerCase()] ?? FaPen
 
-const parsed = parse(contactsRaw) as { contacts?: ContactItem[] }
-const ITEMS = parsed.contacts ?? []
-
-/** Resolve a tile's url into a navigable href. */
 function hrefFor(url: string): string {
   const u = url.trim()
   if (/^(https?:|mailto:)/i.test(u)) return u
@@ -51,25 +34,12 @@ function hrefFor(url: string): string {
   return `https://${u}`
 }
 
-function openItem(item: ContactItem): void {
-  if (!item.click) return
-  const href = hrefFor(item.url)
-  if (item.newTab) window.open(href, '_blank', 'noopener,noreferrer')
-  else window.location.href = href
-}
-
-/**
- * Contact section — renders contacts.yaml as larger tiles in a responsive grid
- * (2-up on laptops, single scrolling column on small screens). Navigable with
- * j/k/h/l and arrows; Enter or click opens links flagged `click: true`, or
- * copies the handle for entries flagged `copy: true`.
- */
 export function Contact() {
+  const { contacts: ITEMS } = useSiteContent()
   const [copied, setCopied] = useState<number | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const copyTimer = useRef<number | undefined>(undefined)
 
-  // Open a link, or copy the value for handle-only contacts (copy: true).
   const activate = (index: number) => {
     const item = ITEMS[index]
     if (!item) return
@@ -84,7 +54,10 @@ export function Contact() {
         .catch(() => {})
       return
     }
-    openItem(item)
+    if (!item.click) return
+    const href = hrefFor(item.url)
+    if (item.newTab) window.open(href, '_blank', 'noopener,noreferrer')
+    else window.location.href = href
   }
 
   useEffect(() => () => window.clearTimeout(copyTimer.current), [])

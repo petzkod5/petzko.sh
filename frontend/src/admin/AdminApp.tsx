@@ -9,17 +9,11 @@ import s from './admin.module.css'
 
 type SectionId = 'about' | 'contact' | 'portfolio' | 'guestlog' | 'blog'
 
-/**
- * The authenticated admin editor. Full-screen, deliberately off-theme, with a
- * draft/save model backed by the browser store (Phase 1). `email` is the
- * verified Access identity; `onClose` returns to the site.
- */
 export function AdminApp({ email, onClose }: { email: string; onClose: () => void }) {
   const store = useAdminContent()
   const [section, setSection] = useState<SectionId>('about')
   const [guestCount, setGuestCount] = useState<number | null>(null)
 
-  // Esc closes (confirming if there are unsaved edits).
   const attemptClose = () => {
     if (store.dirty && !window.confirm('Discard unsaved changes?')) return
     onClose()
@@ -33,8 +27,8 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-    // attemptClose closes over current dirty; re-bind when it changes
-  }, [store.dirty]) // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.dirty])
 
   const nav: { id: SectionId; label: string; count?: number | string; soon?: boolean }[] = [
     { id: 'about', label: 'about', count: 1 },
@@ -43,6 +37,16 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
     { id: 'guestlog', label: 'guest log', count: guestCount ?? '·' },
     { id: 'blog', label: 'blog', soon: true },
   ]
+
+  const statusLabel = store.saving
+    ? 'saving…'
+    : store.saveError
+      ? `error: ${store.saveError}`
+      : store.loading
+        ? 'loading…'
+        : store.dirty
+          ? 'unsaved changes'
+          : 'all changes saved'
 
   return (
     <div className={s.overlay}>
@@ -84,8 +88,7 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
           ))}
 
           <div className={s.sidebarFoot}>
-            changes save to this browser. Wire <b>save</b> to your backend (D1)
-            for production.
+            {store.loading ? 'loading content from D1…' : 'changes saved to D1 on save.'}
             <button type="button" className={s.resetBtn} onClick={store.resetToSeed}>
               reset to seed content
             </button>
@@ -93,35 +96,40 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
         </nav>
 
         <main className={s.main}>
-          {section === 'about' && (
-            <AboutEditor value={store.draft.about} onChange={store.setAbout} />
-          )}
-          {section === 'contact' && (
-            <ContactEditor value={store.draft.contacts} onChange={store.setContacts} />
-          )}
-          {section === 'portfolio' && (
-            <PortfolioEditor
-              value={store.draft.portfolio}
-              onChange={store.setPortfolio}
-            />
-          )}
-          {section === 'guestlog' && <GuestLogModerator onCount={setGuestCount} />}
-          {section === 'blog' && (
+          {store.loading ? (
             <div className={s.editor}>
-              <header className={s.editorHead}>
-                <h2 className={s.editorTitle}>Blog</h2>
-                <p className={s.subtle}>Coming soon.</p>
-              </header>
+              <p className={s.empty}>loading content…</p>
             </div>
+          ) : (
+            <>
+              {section === 'about' && (
+                <AboutEditor value={store.draft.about} onChange={store.setAbout} />
+              )}
+              {section === 'contact' && (
+                <ContactEditor value={store.draft.contacts} onChange={store.setContacts} />
+              )}
+              {section === 'portfolio' && (
+                <PortfolioEditor value={store.draft.portfolio} onChange={store.setPortfolio} />
+              )}
+              {section === 'guestlog' && <GuestLogModerator onCount={setGuestCount} />}
+              {section === 'blog' && (
+                <div className={s.editor}>
+                  <header className={s.editorHead}>
+                    <h2 className={s.editorTitle}>Blog</h2>
+                    <p className={s.subtle}>Coming soon.</p>
+                  </header>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
 
       {/* ── Bottom bar ── */}
       <div className={s.bottombar}>
-        <span className={`${s.status} ${store.dirty ? s.statusDirty : ''}`}>
+        <span className={`${s.status} ${store.dirty ? s.statusDirty : ''} ${store.saveError ? s.statusDirty : ''}`}>
           <span className={s.statusDot} />
-          {store.dirty ? 'unsaved changes' : 'all changes saved'}
+          {statusLabel}
         </span>
         <div className={s.bottomActions}>
           <a className={s.discardBtn} href={ADMIN_LOGOUT_URL}>
@@ -131,17 +139,17 @@ export function AdminApp({ email, onClose }: { email: string; onClose: () => voi
             type="button"
             className={s.discardBtn}
             onClick={store.discard}
-            disabled={!store.dirty}
+            disabled={!store.dirty || store.saving}
           >
             discard
           </button>
           <button
             type="button"
             className={s.saveBtn}
-            onClick={store.save}
-            disabled={!store.dirty}
+            onClick={() => void store.save()}
+            disabled={!store.dirty || store.saving || store.loading}
           >
-            save changes
+            {store.saving ? 'saving…' : 'save changes'}
           </button>
         </div>
       </div>

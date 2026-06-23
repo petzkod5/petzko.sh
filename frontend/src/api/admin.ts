@@ -3,8 +3,19 @@
 // gate UI. Same-origin in prod; in `vite dev`, /api is proxied to `wrangler dev`
 // (which honors the .dev.vars ADMIN_DEV_BYPASS so the flow works locally).
 
+import type { SiteContent } from '@/content/types'
+
 export interface AdminIdentity {
   email: string
+}
+
+export interface AdminGuestEntry {
+  id: number
+  name: string
+  message: string
+  country: string | null
+  created_at: number
+  approved: 0 | 1
 }
 
 // A full-page navigation to this Access-gated path triggers the Cloudflare
@@ -36,4 +47,46 @@ export async function fetchAdminMe(signal?: AbortSignal): Promise<AdminIdentity 
   if (res.status === 401 || res.status === 403) return null
   if (!res.ok) throw new Error(`admin/me ${res.status}`)
   return (await res.json()) as AdminIdentity
+}
+
+/** Save all three content sections to D1. Throws on network/server error. */
+export async function putAdminContent(content: SiteContent): Promise<void> {
+  const res = await fetch('/api/admin/content', {
+    method: 'PUT',
+    credentials: 'same-origin',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(content),
+  })
+  if (!res.ok) throw new Error(`PUT /api/admin/content ${res.status}`)
+}
+
+/** All guestbook entries (including unapproved) for moderation. */
+export async function fetchAdminGuestbook(signal?: AbortSignal): Promise<AdminGuestEntry[]> {
+  const res = await fetch('/api/admin/guestbook', {
+    signal,
+    credentials: 'same-origin',
+  })
+  if (!res.ok) throw new Error(`admin/guestbook ${res.status}`)
+  const data = (await res.json()) as { entries: AdminGuestEntry[] }
+  return data.entries
+}
+
+/** Flip the approved flag on a single guestbook entry. */
+export async function setGuestApproved(id: number, approved: 0 | 1): Promise<void> {
+  const res = await fetch(`/api/admin/guestbook/${id}`, {
+    method: 'PATCH',
+    credentials: 'same-origin',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ approved }),
+  })
+  if (!res.ok) throw new Error(`PATCH /api/admin/guestbook/${id} ${res.status}`)
+}
+
+/** Delete a guestbook entry permanently. */
+export async function deleteGuestEntry(id: number): Promise<void> {
+  const res = await fetch(`/api/admin/guestbook/${id}`, {
+    method: 'DELETE',
+    credentials: 'same-origin',
+  })
+  if (!res.ok) throw new Error(`DELETE /api/admin/guestbook/${id} ${res.status}`)
 }

@@ -1,88 +1,116 @@
-import { useCallback, useMemo, useState } from 'react'
-import {
-  seedContent,
-  type AboutDoc,
-  type AdminContent,
-  type ContactItem,
-  type ProjectItem,
-} from './model'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { seedContent, type AdminContent, type AboutDoc, type ContactItem, type ProjectItem } from './model'
+import { fetchSiteContent } from '@/content/load'
+import { putAdminContent } from '@/api/admin'
 
-// Phase-1 persistence: the editable content lives in localStorage, seeded once
-// from the static content files. Bump the version suffix if the shape changes.
-const STORAGE_KEY = 'petzko:admin:content:v1'
+// Keep an unsaved-draft recovery cache in localStorage so edits survive a page
+// reload before the user saves. Cleared on successful save.
+const DRAFT_KEY = 'petzko:admin:draft:v2'
 
-function load(): AdminContent {
+function loadDraft(): AdminContent | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(DRAFT_KEY)
     if (raw) return JSON.parse(raw) as AdminContent
   } catch {
-    // corrupt/blocked storage — fall back to a fresh seed
+    // corrupt / unavailable
   }
-  return seedContent()
+  return null
+}
+
+function saveDraft(c: AdminContent) {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(c))
+  } catch {
+    // best-effort
+  }
+}
+
+function clearDraft() {
+  try {
+    localStorage.removeItem(DRAFT_KEY)
+  } catch {
+    // best-effort
+  }
 }
 
 export interface AdminContentStore {
   draft: AdminContent
+  saved: AdminContent
   dirty: boolean
-  /** Persist the draft to the browser store (Phase 2: POST to the backend). */
-  save: () => void
-  /** Revert the draft back to the last saved snapshot. */
+  loading: boolean
+  saving: boolean
+  saveError: string | null
+  save: () => Promise<void>
   discard: () => void
-  /** Re-seed from the static content files (drops local edits). */
   resetToSeed: () => void
   setAbout: (about: AboutDoc) => void
   setContacts: (contacts: ContactItem[]) => void
   setPortfolio: (portfolio: ProjectItem[]) => void
 }
 
-/**
- * Editable admin content with a draft/saved split. `dirty` drives the
- * save/discard affordances; `save` commits the draft to localStorage. Nothing
- * here touches the live site yet — that's the Phase-2 D1 wiring.
- */
 export function useAdminContent(): AdminContentStore {
-  const [saved, setSaved] = useState<AdminContent>(load)
-  const [draft, setDraft] = useState<AdminContent>(saved)
+  const seed = useMemo(() => seedContent(), [])
+  const [saved, setSaved] = useState<AdminContent>(seed)
+  const [draft, setDraft] = useState<AdminContent>(() => loadDraft() ?? seed)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  // Hydrate from D1 on mount. If there's a local draft (unsaved changes), keep
+  // it on top of the freshly fetched saved state.
+  const hasDraft = useRef(loadDraft() !== null)
+  useEffect(() => {
+    const ctrl = new AbortController()
+    fetchSiteContent(ctrl.signal).then((live) => {
+      if (live) {
+        setSaved(live)
+        if (!hasDraft.current) setDraft(live)
+      }
+      setLoading(false)
+    })
+    return () => ctrl.abort()
+  }, [])
 
   const dirty = useMemo(
     () => JSON.stringify(draft) !== JSON.stringify(saved),
     [draft, saved],
   )
 
-  const save = useCallback(() => {
+  // Persist draft to localStorage whenever it changes.
+  useEffect(() => {
+    if (dirty) saveDraft(draft)
+  }, [draft, dirty])
+
+  const save = useCallback(async () => {
+    setSaving(true)
+    setSaveError(null)
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
-    } catch {
-      // best-effort; storage may be unavailable
+      await putAdminContent(draft)
+      setSaved(draft)
+      clearDraft()
+      hasDraft.current = false
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'save failed')
+    } finally {
+      setSaving(false)
     }
-    setSaved(draft)
   }, [draft])
 
-  const discard = useCallback(() => setDraft(saved), [saved])
+  const discard = useCallback(() => {
+    setDraft(saved)
+    clearDraft()
+    hasDraft.current = false
+  }, [saved])
 
-  const resetToSeed = useCallback(() => setDraft(seedContent()), [])
+  const resetToSeed = useCallback(() => {
+    setDraft(seed)
+    saveDraft(seed)
+    hasDraft.current = true
+  }, [seed])
 
-  const setAbout = useCallback(
-    (about: AboutDoc) => setDraft((d) => ({ ...d, about })),
-    [],
-  )
-  const setContacts = useCallback(
-    (contacts: ContactItem[]) => setDraft((d) => ({ ...d, contacts })),
-    [],
-  )
-  const setPortfolio = useCallback(
-    (portfolio: ProjectItem[]) => setDraft((d) => ({ ...d, portfolio })),
-    [],
-  )
+  const setAbout = useCallback((about: AboutDoc) => setDraft((d) => ({ ...d, about })), [])
+  const setContacts = useCallback((contacts: ContactItem[]) => setDraft((d) => ({ ...d, contacts })), [])
+  const setPortfolio = useCallback((portfolio: ProjectItem[]) => setDraft((d) => ({ ...d, portfolio })), [])
 
-  return {
-    draft,
-    dirty,
-    save,
-    discard,
-    resetToSeed,
-    setAbout,
-    setContacts,
-    setPortfolio,
-  }
+  return { draft, saved, dirty, loading, saving, saveError, save, discard, resetToSeed, setAbout, setContacts, setPortfolio }
 }

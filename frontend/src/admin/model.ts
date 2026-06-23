@@ -1,46 +1,18 @@
-// Admin content model + one-time seed from the static content files.
-//
-// Phase 1 keeps an editable copy of the site's content in the browser
-// (localStorage) so the admin UI can be built and exercised before the D1
-// backend exists. The src/content/* files are used ONLY to seed the store the
-// first time; after that the store is the source of truth for the editor.
-// (Wiring the live site to read this — via D1 — is Phase 2.)
+// Admin content model — types come from content/types.ts (shared with the live
+// site); this module owns editor helpers, empty-item factories, and the seed
+// function used to pre-populate a fresh admin session.
 
 import aboutRaw from '@/content/about.md?raw'
 import contactsRaw from '@/content/contacts.yaml?raw'
 import portfolioRaw from '@/content/portfolio.yaml?raw'
 import { parseFrontmatter } from '@/content/frontmatter'
 import { parse } from 'yaml'
+import type { ContactItem, ProjectItem, SiteContent } from '@/content/types'
 
-export interface AboutDoc {
-  heading: string
-  avatar: string
-  avatarAlt: string
-  body: string
-}
+export type { AboutDoc, ContactItem, ProjectItem, SiteContent } from '@/content/types'
 
-export interface ContactItem {
-  type: string
-  url: string
-  description: string
-  click: boolean
-  newTab: boolean
-  copy: boolean
-}
-
-export interface ProjectItem {
-  type: string
-  name: string
-  url: string
-  company: string
-  description: string
-}
-
-export interface AdminContent {
-  about: AboutDoc
-  contacts: ContactItem[]
-  portfolio: ProjectItem[]
-}
+// AdminContent is an alias for SiteContent — keeps existing imports working.
+export type AdminContent = SiteContent
 
 /** Known contact `type` values (for the editor's suggestions). */
 export const CONTACT_TYPES = [
@@ -88,17 +60,20 @@ function normalizeProject(p: Record<string, unknown>): ProjectItem {
 /** Build the initial content by parsing the static content files. */
 export function seedContent(): AdminContent {
   const fm = parseFrontmatter(aboutRaw)
-  const about: AboutDoc = {
+  const about = {
     heading: fm.data.title ?? 'About',
     avatar: fm.data.avatar ?? '',
     avatarAlt: fm.data.avatarAlt ?? '',
     body: fm.content.replace(/^\s+/, ''),
   }
 
-  const contacts = ((parse(contactsRaw) as { contacts?: Record<string, unknown>[] })
-    .contacts ?? []).map(normalizeContact)
-  const portfolio = ((parse(portfolioRaw) as { portfolio?: Record<string, unknown>[] })
-    .portfolio ?? []).map(normalizeProject)
+  const contacts = (
+    (parse(contactsRaw) as { contacts?: Record<string, unknown>[] }).contacts ?? []
+  ).map(normalizeContact)
+
+  const portfolio = (
+    (parse(portfolioRaw) as { portfolio?: Record<string, unknown>[] }).portfolio ?? []
+  ).map(normalizeProject)
 
   return { about, contacts, portfolio }
 }

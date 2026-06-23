@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import { fetchGuestbook, type GuestEntry } from '@/api/guestbook'
+import {
+  fetchAdminGuestbook,
+  setGuestApproved,
+  deleteGuestEntry,
+  type AdminGuestEntry,
+} from '@/api/admin'
 import s from '../admin.module.css'
 
 type Load = 'loading' | 'ok' | 'error'
@@ -23,18 +28,14 @@ function flag(country: string | null): string {
   )
 }
 
-/**
- * Guest-log moderation. Phase 1 lists the live (approved) entries read-only —
- * actual hide/delete actions need authed admin endpoints on the Worker, which
- * land with the Phase-2 backend wiring.
- */
 export function GuestLogModerator({ onCount }: { onCount?: (n: number) => void }) {
-  const [entries, setEntries] = useState<GuestEntry[]>([])
+  const [entries, setEntries] = useState<AdminGuestEntry[]>([])
   const [load, setLoad] = useState<Load>('loading')
 
-  useEffect(() => {
+  const reload = () => {
+    setLoad('loading')
     const ctrl = new AbortController()
-    fetchGuestbook(50, ctrl.signal)
+    fetchAdminGuestbook(ctrl.signal)
       .then((rows) => {
         setEntries(rows)
         onCount?.(rows.length)
@@ -44,46 +45,69 @@ export function GuestLogModerator({ onCount }: { onCount?: (n: number) => void }
         if ((err as Error)?.name !== 'AbortError') setLoad('error')
       })
     return () => ctrl.abort()
-    // onCount is stable enough; intentionally run once
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }
+
+  useEffect(reload, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggle = async (entry: AdminGuestEntry) => {
+    const next: 0 | 1 = entry.approved ? 0 : 1
+    await setGuestApproved(entry.id, next)
+    setEntries((prev) => prev.map((e) => (e.id === entry.id ? { ...e, approved: next } : e)))
+  }
+
+  const remove = async (id: number) => {
+    if (!window.confirm('Delete this entry permanently?')) return
+    await deleteGuestEntry(id)
+    setEntries((prev) => prev.filter((e) => e.id !== id))
+    onCount?.(entries.length - 1)
+  }
 
   return (
     <div className={s.editor}>
       <header className={s.editorHead}>
         <h2 className={s.editorTitle}>Guest Log</h2>
-        <p className={s.subtle}>Entries left via the hidden `:sign` command.</p>
+        <p className={s.subtle}>Entries left via the hidden `:sign` command. Includes unapproved.</p>
       </header>
 
       {load === 'loading' && <p className={s.empty}>loading entries…</p>}
       {load === 'error' && (
         <p className={s.empty}>
-          couldn’t reach the guestbook API (expected on staging / local without
-          the Worker).
+          couldn't reach the admin guestbook API (expected on staging / local without the Worker).
         </p>
       )}
-      {load === 'ok' && entries.length === 0 && (
-        <p className={s.empty}>no entries yet.</p>
-      )}
+      {load === 'ok' && entries.length === 0 && <p className={s.empty}>no entries yet.</p>}
 
       {load === 'ok' && entries.length > 0 && (
         <div className={s.guestList}>
           {entries.map((e) => (
-            <div className={s.guestRow} key={e.id}>
+            <div className={`${s.guestRow} ${!e.approved ? s.guestRowHidden : ''}`} key={e.id}>
               <span className={s.guestName}>
                 {flag(e.country)} {e.name}
               </span>
               <span className={s.guestMsg}>{e.message}</span>
               <span className={s.guestMeta}>{ago(e.created_at)} ago</span>
+              <div className={s.guestActions}>
+                <button
+                  type="button"
+                  className={s.guestActionBtn}
+                  onClick={() => void toggle(e)}
+                  title={e.approved ? 'hide from public' : 'approve'}
+                >
+                  {e.approved ? 'hide' : 'approve'}
+                </button>
+                <button
+                  type="button"
+                  className={`${s.guestActionBtn} ${s.guestActionDanger}`}
+                  onClick={() => void remove(e.id)}
+                  title="delete permanently"
+                >
+                  delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
-
-      <div className={s.note}>
-        Moderation (hide / delete) wires up with the Phase-2 backend — the Worker
-        needs authed admin endpoints to flip <code>approved</code> or remove rows.
-      </div>
     </div>
   )
 }

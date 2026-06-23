@@ -1,48 +1,31 @@
 import { useRef, type ReactNode } from 'react'
 import { SiGithub } from 'react-icons/si'
 import { FaCircleInfo } from 'react-icons/fa6'
-import { parse } from 'yaml'
-import portfolioRaw from '../content/portfolio.yaml?raw'
+import { useSiteContent } from '@/state/ContentProvider'
 import { useGridNav } from './useGridNav'
 import styles from './Portfolio.module.css'
 
-interface ProjectItem {
-  type: string
-  name: string
-  url?: string
-  company?: string
-  description?: string
-}
+import type { ProjectItem } from '@/content/types'
 
-/** Official Lockheed Martin star, recoloured to the theme via a CSS mask
- *  (public/portfolio/lockheed.png). */
 function LockheedMark() {
   return <span className={styles.lockheed} aria-hidden="true" />
 }
 
 const isGithub = (item: ProjectItem) => item.type.toLowerCase() === 'github'
 
-/** Icon for a project: GitHub mark, Lockheed mark, or a generic info icon. */
 function iconFor(item: ProjectItem): ReactNode {
   if (isGithub(item)) return <SiGithub />
   if (item.company && /lockheed/i.test(item.company)) return <LockheedMark />
   return <FaCircleInfo />
 }
 
-const parsed = parse(portfolioRaw) as { portfolio?: ProjectItem[] }
-const ITEMS = parsed.portfolio ?? []
-
 function hrefFor(url: string): string {
   const u = url.trim()
   return /^https?:/i.test(u) ? u : `https://${u}`
 }
 
-/**
- * Portfolio section — renders portfolio.yaml as square-ish tiles in a grid.
- * GitHub projects open their repo in a new tab (click / Enter); work projects
- * are proprietary and have no link. Navigable with j/k/h/l and arrows.
- */
 export function Portfolio() {
+  const { portfolio: ITEMS } = useSiteContent()
   const gridRef = useRef<HTMLDivElement>(null)
 
   const activate = (index: number) => {

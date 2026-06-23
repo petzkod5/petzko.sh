@@ -570,6 +570,41 @@
   white-space: nowrap;
 }
 
+.guestRowHidden {
+  opacity: 0.45;
+}
+
+.guestActions {
+  display: flex;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.guestActionBtn {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  border: 1px solid var(--a-border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--a-dim);
+  cursor: pointer;
+}
+
+.guestActionBtn:hover {
+  background: var(--a-panel-2);
+  color: var(--a-text);
+}
+
+.guestActionDanger {
+  border-color: var(--a-danger);
+  color: var(--a-danger);
+}
+
+.guestActionDanger:hover {
+  background: color-mix(in srgb, var(--a-danger) 15%, transparent);
+}
+
 .note {
   margin-top: 1rem;
   padding: 0.7rem 0.9rem;
