@@ -41,6 +41,8 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8787',
         changeOrigin: true,
+        // Proxy WebSockets too (the /api/telemetry/stream live feed).
+        ws: true,
       },
     },
   },
