@@ -10,6 +10,7 @@ import {
 import { appVersion, buildEnv } from '@/config'
 import { useNavStack, type Layer } from '@/state/useNavStack'
 import { useTheme, type Theme } from '@/state/useTheme'
+import { usePresence } from '@/state/PresenceProvider'
 import { About } from '@/sections/About'
 import { Contact } from '@/sections/Contact'
 import { Portfolio } from '@/sections/Portfolio'
@@ -57,12 +58,28 @@ const SECTIONS = [
   { name: 'system', key: 'y', type: 'telemetry', status: 'ready' },
 ] as const
 
+// Static context rows. `Users` (live) and `Sections` are rendered after these.
 const CONTEXT = [
   ['Context', 'petzko.sh'],
   ['Host', 'rivendell'],
   ['Build', `${buildEnv} · v${appVersion}`],
-  ['Sections', String(SECTIONS.length)],
 ] as const
+
+/** Live user count — a plain metadata value that flashes once when it changes. */
+function UsersValue({ users }: { users: number | null }) {
+  const [flash, setFlash] = useState(false)
+  const prev = useRef<number | null>(null)
+  useEffect(() => {
+    if (prev.current != null && users != null && users !== prev.current) {
+      setFlash(true)
+      const t = window.setTimeout(() => setFlash(false), 900)
+      prev.current = users
+      return () => window.clearTimeout(t)
+    }
+    prev.current = users
+  }, [users])
+  return <span className={flash ? styles.ctxFlash : undefined}>{users ?? '·'}</span>
+}
 
 /**
  * Phase 2/3 shell (DESIGN.md §6–§7), styled after k9s: a context block, an
@@ -79,6 +96,7 @@ export function Tui({ building = false }: TuiProps) {
   const [cmdValue, setCmdValue] = useState('')
   const { stack, current, atRoot, push, pop, goTo } = useNavStack()
   const { cycle: cycleTheme, setTheme, themes } = useTheme()
+  const users = usePresence()
   const scrollRef = useRef<HTMLDivElement>(null)
   const scrollIdle = useRef<number | undefined>(undefined)
   const [canScrollDown, setCanScrollDown] = useState(false)
@@ -391,6 +409,16 @@ export function Tui({ building = false }: TuiProps) {
               <dd className={styles.ctxVal}>{v}</dd>
             </div>
           ))}
+          <div className={styles.ctxRow}>
+            <dt className={styles.ctxKey}>Users:</dt>
+            <dd className={styles.ctxVal}>
+              <UsersValue users={users} />
+            </dd>
+          </div>
+          <div className={styles.ctxRow}>
+            <dt className={styles.ctxKey}>Sections:</dt>
+            <dd className={styles.ctxVal}>{SECTIONS.length}</dd>
+          </div>
         </dl>
 
         <div className={styles.keys}>

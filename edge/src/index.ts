@@ -94,6 +94,63 @@ export class TelemetryHub {
   async webSocketError(): Promise<void> {}
 }
 
+// ── PresenceHub (Durable Object) ──────────────────────────────────────────────
+// Site-wide live presence: every visitor opens a WebSocket on app load; this
+// object counts the live connections and broadcasts { users: N } whenever the
+// count changes (join/leave). Pure in-memory + hibernation; no auth, no storage.
+// One instance (idFromName("global")) for the whole site.
+const PRESENCE_MAX_SOCKETS = 1000
+
+export class PresenceHub {
+  private ctx: DurableObjectState
+
+  constructor(ctx: DurableObjectState) {
+    this.ctx = ctx
+  }
+
+  async fetch(req: Request): Promise<Response> {
+    const url = new URL(req.url)
+    if (url.pathname === '/connect') {
+      if (req.headers.get('Upgrade') !== 'websocket') {
+        return new Response('expected websocket', { status: 426 })
+      }
+      if (this.ctx.getWebSockets().length >= PRESENCE_MAX_SOCKETS) {
+        return new Response('too many connections', { status: 503 })
+      }
+      const pair = new WebSocketPair()
+      const [client, server] = [pair[0], pair[1]]
+      this.ctx.acceptWebSocket(server) // hibernation API
+      // The new socket is now in getWebSockets(); broadcasting includes it, so
+      // the joiner gets the current count and everyone sees the bump.
+      this.broadcast()
+      return new Response(null, { status: 101, webSocket: client })
+    }
+    return new Response('not found', { status: 404 })
+  }
+
+  private broadcast(excluding?: WebSocket): void {
+    const sockets = this.ctx.getWebSockets()
+    const count = excluding ? sockets.filter((s) => s !== excluding).length : sockets.length
+    const msg = JSON.stringify({ users: count })
+    for (const ws of sockets) {
+      if (ws === excluding) continue
+      try {
+        ws.send(msg)
+      } catch {
+        /* drop a broken socket */
+      }
+    }
+  }
+
+  async webSocketMessage(): Promise<void> {}
+  async webSocketClose(ws: WebSocket): Promise<void> {
+    // The closing socket may still be in getWebSockets(); exclude it from the
+    // count and don't send to it.
+    this.broadcast(ws)
+  }
+  async webSocketError(): Promise<void> {}
+}
+
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url)
@@ -174,6 +231,13 @@ export default {
       // Durable Object. Updates are pushed the instant the collector ingests.
       if (method === 'GET' && pathname === '/api/telemetry/stream') {
         const stub = env.TELEMETRY_HUB.get(env.TELEMETRY_HUB.idFromName('fleet'))
+        return stub.fetch('https://hub/connect', req)
+      }
+
+      // Public: site-wide live presence — WebSocket that streams the connected
+      // user count ({ users: N }) via the PresenceHub Durable Object.
+      if (method === 'GET' && pathname === '/api/presence/stream') {
+        const stub = env.PRESENCE_HUB.get(env.PRESENCE_HUB.idFromName('global'))
         return stub.fetch('https://hub/connect', req)
       }
 

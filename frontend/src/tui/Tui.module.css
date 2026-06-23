@@ -94,6 +94,28 @@
   font-weight: 600;
 }
 
+/* Live "Users" value flashes once when the count changes (join/leave). */
+.ctxFlash {
+  animation: ctxflash 0.9s ease-out 1;
+}
+
+@keyframes ctxflash {
+  0% {
+    color: var(--color-highlight);
+    text-shadow: 0 0 8px var(--crt-glow-soft);
+  }
+  100% {
+    color: var(--color-text-primary);
+    text-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctxFlash {
+    animation: none;
+  }
+}
+
 .keyRow {
   white-space: nowrap;
   color: var(--color-text-body);
