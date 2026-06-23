@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/petzkod5/petzko.sh/compare/v1.15.0...v1.16.0) (2026-06-23)
+
+
+### Features
+
+* **system:** :neofetch command — ASCII Rivendell logo + cluster facts ([1d9bfa5](https://github.com/petzkod5/petzko.sh/commit/1d9bfa521bc7aa7a5d783afe3a7fad664a22245f))
+
 # [1.15.0](https://github.com/petzkod5/petzko.sh/compare/v1.14.1...v1.15.0) (2026-06-23)
 
 
