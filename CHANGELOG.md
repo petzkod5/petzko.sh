@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/petzkod5/petzko.sh/compare/v1.17.0...v1.18.0) (2026-06-23)
+
+
+### Features
+
+* **system:** "serving you" detection via per-cluster config.js ([50b223d](https://github.com/petzkod5/petzko.sh/commit/50b223d5a8dbb2de6f8e87e7f3ad0ba586200438))
+
 # [1.17.0](https://github.com/petzkod5/petzko.sh/compare/v1.16.0...v1.17.0) (2026-06-23)
 
 
