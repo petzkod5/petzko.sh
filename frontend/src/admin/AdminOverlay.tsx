@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { fetchAdminMe, ADMIN_LOGIN_URL } from '@/api/admin'
 import { AdminApp } from './AdminApp'
 import s from './admin.module.css'
@@ -9,6 +10,10 @@ type Gate = 'checking' | 'authed' | 'unauth' | 'error'
  * Full-screen admin overlay. Gates on Cloudflare Access (via /api/admin/me);
  * once authenticated it hands off to the editor. Opened by the `:admin` command
  * and auto-opened after the Access login bounce (?admin=1).
+ *
+ * Rendered through a portal to document.body so it escapes the CrtMonitor's
+ * `.screen` — otherwise the CRT overlay layers (vignette/scanlines/sweep/
+ * flicker), which paint above `.content`, would bleed over the admin UI.
  */
 export function AdminOverlay({ onClose }: { onClose: () => void }) {
   const [gate, setGate] = useState<Gate>('checking')
@@ -44,9 +49,10 @@ export function AdminOverlay({ onClose }: { onClose: () => void }) {
     return () => document.removeEventListener('keydown', onKey)
   }, [gate, onClose])
 
-  if (gate === 'authed') return <AdminApp email={email} onClose={onClose} />
+  if (gate === 'authed')
+    return createPortal(<AdminApp email={email} onClose={onClose} />, document.body)
 
-  return (
+  return createPortal(
     <div className={s.overlay}>
       <div className={s.gate}>
         {gate === 'checking' && <p className={s.gateText}>verifying clearance…</p>}
@@ -86,6 +92,7 @@ export function AdminOverlay({ onClose }: { onClose: () => void }) {
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
