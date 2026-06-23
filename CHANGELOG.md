@@ -1,3 +1,11 @@
+# [1.14.0](https://github.com/petzkod5/petzko.sh/compare/v1.13.0...v1.14.0) (2026-06-23)
+
+
+### Features
+
+* **edge:** telemetry ingest + fleet read endpoints ([519d6f3](https://github.com/petzkod5/petzko.sh/commit/519d6f3b8423aebed97575f89533838ac6b5116a))
+* **frontend:** :system section with live fleet telemetry ([9b645b2](https://github.com/petzkod5/petzko.sh/commit/9b645b209e59db3a88518a0932d58fda9e1b1f93))
+
 # [1.13.0](https://github.com/petzkod5/petzko.sh/compare/v1.12.0...v1.13.0) (2026-06-23)
 
 
