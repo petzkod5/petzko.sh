@@ -11,7 +11,6 @@ import { appVersion, buildEnv } from '@/config'
 import { useNavStack, type Layer } from '@/state/useNavStack'
 import { useTheme, type Theme } from '@/state/useTheme'
 import { About } from '@/sections/About'
-import { AdminOverlay } from '@/admin/AdminOverlay'
 import { Contact } from '@/sections/Contact'
 import { Portfolio } from '@/sections/Portfolio'
 import { Stats } from '@/sections/Stats'
@@ -23,6 +22,13 @@ import styles from './Tui.module.css'
 
 // pdf.js is heavy — load the resume section only when it's opened.
 const Resume = lazy(() => import('@/sections/Resume'))
+
+// The admin panel (editors, store, ~640 lines of off-theme CSS) is a single-user
+// feature behind Cloudflare Access — code-split it out of the main bundle so
+// public visitors never download it; fetched only when `:admin` is invoked.
+const AdminOverlay = lazy(() =>
+  import('@/admin/AdminOverlay').then((m) => ({ default: m.AdminOverlay })),
+)
 
 interface TuiProps {
   /** True during the BUILDING_TUI phase — applies the assemble-in animation. */
@@ -556,8 +562,13 @@ export function Tui({ building = false }: TuiProps) {
         />
       )}
 
-      {/* Full-screen admin overlay (opened via `:admin`, Access-gated). */}
-      {showAdmin && <AdminOverlay onClose={() => setShowAdmin(false)} />}
+      {/* Full-screen admin overlay (opened via `:admin`, Access-gated).
+          Lazy-loaded — its chunk is fetched only when first opened. */}
+      {showAdmin && (
+        <Suspense fallback={null}>
+          <AdminOverlay onClose={() => setShowAdmin(false)} />
+        </Suspense>
+      )}
     </div>
   )
 }
