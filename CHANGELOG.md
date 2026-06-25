@@ -1,3 +1,10 @@
+## [1.25.1](https://github.com/petzkod5/petzko.sh/compare/v1.25.0...v1.25.1) (2026-06-25)
+
+
+### Bug Fixes
+
+* **deps:** update node.js to v24.18.0 ([#41](https://github.com/petzkod5/petzko.sh/issues/41)) ([1cd9ff2](https://github.com/petzkod5/petzko.sh/commit/1cd9ff265291be5a9e06d10406fa2038a87bd13b))
+
 # [1.25.0](https://github.com/petzkod5/petzko.sh/compare/v1.24.0...v1.25.0) (2026-06-25)
 
 
