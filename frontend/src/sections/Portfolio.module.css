@@ -50,6 +50,13 @@
   filter: drop-shadow(0 0 6px var(--crt-glow-soft));
 }
 
+.iconImg {
+  display: block;
+  width: 1.9rem;
+  height: 1.9rem;
+  object-fit: contain;
+}
+
 /* Lockheed star: PNG used as a mask, filled with the phosphor accent. */
 .lockheed {
   display: inline-block;

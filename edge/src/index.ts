@@ -922,7 +922,9 @@ function validatePortfolio(x: unknown): boolean {
       isStr((p as Record<string, unknown>).name, 200) &&
       isStr((p as Record<string, unknown>).url, 500) &&
       isStr((p as Record<string, unknown>).company, 200) &&
-      isStr((p as Record<string, unknown>).description, 5_000),
+      isStr((p as Record<string, unknown>).description, 5_000) &&
+      ((p as Record<string, unknown>).icon === undefined ||
+        isStr((p as Record<string, unknown>).icon, 500)),
   )
 }
 

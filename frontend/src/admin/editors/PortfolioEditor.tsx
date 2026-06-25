@@ -79,6 +79,16 @@ export function PortfolioEditor({
               </Field>
             )}
 
+            <Field label="Custom icon URL" meta="optional — overrides the default icon">
+              <input
+                className={s.input}
+                value={item.icon ?? ''}
+                onChange={(e) => update(i, { icon: e.target.value })}
+                spellCheck={false}
+                placeholder="https://… or /portfolio/icon.png"
+              />
+            </Field>
+
             <Field label="Description">
               <textarea
                 className={`${s.textarea} ${s.textareaShort}`}

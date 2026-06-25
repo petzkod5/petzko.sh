@@ -8,6 +8,7 @@
 #   company     employer (work projects) — "Lockheed Martin" shows the Lockheed
 #               mark; any other company shows a generic info icon
 #   description free text (use a | block for multiple lines)
+#   icon        optional URL to a custom icon image (png/svg/data:/root-relative); overrides the default icon
 portfolio:
   - type: github
     name: My Resume

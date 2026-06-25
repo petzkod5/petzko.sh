@@ -18,6 +18,7 @@ export interface ProjectItem {
   type: string
   name: string
   url: string
+  icon: string
   company: string
   description: string
 }

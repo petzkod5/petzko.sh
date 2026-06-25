@@ -21,6 +21,7 @@ function normalizeProject(p: Record<string, unknown>): ProjectItem {
     type: String(p.type ?? ''),
     name: String(p.name ?? ''),
     url: String(p.url ?? ''),
+    icon: String(p.icon ?? '').trim(),
     company: String(p.company ?? ''),
     description: String(p.description ?? '').trim(),
   }

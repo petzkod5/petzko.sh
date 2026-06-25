@@ -33,7 +33,7 @@ export function emptyContact(): ContactItem {
 }
 
 export function emptyProject(): ProjectItem {
-  return { type: 'github', name: '', url: '', company: '', description: '' }
+  return { type: 'github', name: '', url: '', icon: '', company: '', description: '' }
 }
 
 function normalizeContact(c: Record<string, unknown>): ContactItem {
@@ -52,6 +52,7 @@ function normalizeProject(p: Record<string, unknown>): ProjectItem {
     type: String(p.type ?? ''),
     name: String(p.name ?? ''),
     url: String(p.url ?? ''),
+    icon: String(p.icon ?? '').trim(),
     company: String(p.company ?? ''),
     description: String(p.description ?? '').trim(),
   }
