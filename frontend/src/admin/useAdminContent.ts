@@ -5,7 +5,7 @@ import { putAdminContent, AdminAuthError, AdminValidationError } from '@/api/adm
 
 // Keep an unsaved-draft recovery cache in localStorage so edits survive a page
 // reload before the user saves. Cleared on successful save.
-const DRAFT_KEY = 'petzko:admin:draft:v2'
+const DRAFT_KEY = 'petzko:admin:draft:v3'
 
 function loadDraft(): AdminContent | null {
   try {

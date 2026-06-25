@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { SiGithub } from 'react-icons/si'
 import { FaCircleInfo } from 'react-icons/fa6'
 import { useSiteContent } from '@/state/ContentProvider'
@@ -13,7 +13,7 @@ function LockheedMark() {
 
 const isGithub = (item: ProjectItem) => item.type.toLowerCase() === 'github'
 
-function iconFor(item: ProjectItem): ReactNode {
+function builtinIcon(item: ProjectItem): ReactNode {
   if (isGithub(item)) return <SiGithub />
   if (item.company && /lockheed/i.test(item.company)) return <LockheedMark />
   return <FaCircleInfo />
@@ -22,6 +22,28 @@ function iconFor(item: ProjectItem): ReactNode {
 function hrefFor(url: string): string {
   const u = url.trim()
   return /^https?:/i.test(u) ? u : `https://${u}`
+}
+
+function iconSrc(url: string): string {
+  const u = url.trim()
+  return /^(https?:|data:|\/)/i.test(u) ? u : `https://${u}`
+}
+
+function ProjectIcon({ item }: { item: ProjectItem }) {
+  const [failed, setFailed] = useState(false)
+  if (item.icon && !failed) {
+    return (
+      <img
+        className={styles.iconImg}
+        src={iconSrc(item.icon)}
+        alt=""
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+      />
+    )
+  }
+  return <>{builtinIcon(item)}</>
 }
 
 export function Portfolio() {
@@ -55,7 +77,7 @@ export function Portfolio() {
             onMouseEnter={() => setSel(i)}
             onClick={() => activate(i)}
           >
-            <span className={styles.icon}>{iconFor(item)}</span>
+            <span className={styles.icon}><ProjectIcon key={item.icon} item={item} /></span>
             <div className={styles.name}>{item.name}</div>
             {meta && <div className={styles.meta}>{meta}</div>}
             {item.description && (
