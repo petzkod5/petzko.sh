@@ -5,7 +5,7 @@
 # Pinned to the *builder* platform so the bundler runs natively (its output is
 # static, arch-independent assets) — this avoids slow/broken QEMU emulation when
 # cross-building the amd64 runtime image from an arm64 host.
-FROM --platform=$BUILDPLATFORM node:24.17.0-alpine AS build
+FROM --platform=$BUILDPLATFORM node:24.18.0-alpine AS build
 
 WORKDIR /app
 
