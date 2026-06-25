@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/petzkod5/petzko.sh/compare/v1.24.0...v1.25.0) (2026-06-25)
+
+
+### Features
+
+* **portfolio:** add custom icon URL for portfolio tools ([23036b1](https://github.com/petzkod5/petzko.sh/commit/23036b17e3b2ad78f8cb8a2b18b18959a4f54239))
+
 # [1.24.0](https://github.com/petzkod5/petzko.sh/compare/v1.23.0...v1.24.0) (2026-06-23)
 
 
