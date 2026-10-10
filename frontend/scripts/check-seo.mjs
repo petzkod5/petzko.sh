@@ -1,7 +1,10 @@
 // SEO guard for the built homepage. Run after `npm run build`.
 import { readFileSync } from "node:fs";
 
-const EXPECTED = "Dylan Petzko - Everything Engineer - War Developer";
+const EXPECTED_TITLE = "Dylan Petzko - Everything Engineer - War Developer";
+const EXPECTED_DESCRIPTION =
+  "Dylan Petzko is an everything engineer building Kubernetes homelabs, platform tooling, and GitOps infrastructure.";
+const EXPECTED_JOB_TITLE = "Everything Engineer";
 const CANONICAL = "https://petzko.sh/";
 const FORBIDDEN = "emotionally unavailable";
 
@@ -27,9 +30,13 @@ const checks = {
 
 for (const [name, r] of Object.entries(checks)) {
   if (r.error) { failures.push(`${name}: ${r.error}`); continue; }
-  if (r.value !== EXPECTED) failures.push(`${name}: expected "${EXPECTED}", got "${r.value}"`);
+  const expected = name.endsWith("title") ? EXPECTED_TITLE : EXPECTED_DESCRIPTION;
+  if (r.value !== expected) failures.push(`${name}: expected "${expected}", got "${r.value}"`);
   if (r.value.toLowerCase().includes(FORBIDDEN)) failures.push(`${name}: contains "Emotionally unavailable"`);
 }
+
+const jobTitles = [...html.matchAll(/"jobTitle":\s*"([^"]*)"/g)].map((m) => m[1]);
+if (jobTitles.length !== 1 || jobTitles[0] !== EXPECTED_JOB_TITLE) failures.push(`jobTitle: expected one "${EXPECTED_JOB_TITLE}", got ${JSON.stringify(jobTitles)}`);
 
 const h1s = html.match(/<h1[\s>]/gi) ?? [];
 if (h1s.length !== 1) failures.push(`expected exactly one <h1>, found ${h1s.length}`);
@@ -41,4 +48,4 @@ if (failures.length) {
   console.error("SEO check failed:\n- " + failures.join("\n- "));
   process.exit(1);
 }
-console.log("SEO check passed: 6 tags match, one <h1>, canonical unchanged.");
+console.log("SEO check passed: 6 tags match, jobTitle set, one <h1>, canonical unchanged.");
