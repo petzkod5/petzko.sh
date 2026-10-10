@@ -1,3 +1,10 @@
+## [1.25.3](https://github.com/petzkod5/petzko.sh/compare/v1.25.2...v1.25.3) (2026-10-10)
+
+
+### Bug Fixes
+
+* **seo:** real description sentence and Everything Engineer jobTitle ([#46](https://github.com/petzkod5/petzko.sh/issues/46)) ([b478021](https://github.com/petzkod5/petzko.sh/commit/b4780214774a72acea2efdecd90cb5bf5055a7d0))
+
 ## [1.25.2](https://github.com/petzkod5/petzko.sh/compare/v1.25.1...v1.25.2) (2026-10-10)
 
 
