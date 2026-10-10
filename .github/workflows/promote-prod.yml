@@ -85,6 +85,35 @@ jobs:
           git commit -m "chore(deploy): promote prod to v$V [skip ci]"
           git push origin HEAD:${{ github.ref_name }}
 
+      - name: Bump VPS prod pin in cloud-petzko-sh
+        # The cloud-petzko-sh Argo CD app (petzko-sh-vps) pins its own image tag
+        # in stacks/argocd/apps/petzko-sh.yaml and ignores values-prod.yaml.
+        # The default GITHUB_TOKEN can't write to another repo, so this needs a
+        # fine-grained PAT / GitHub App token with contents:write on
+        # petzkod5/cloud-petzko-sh stored as CLOUD_PETZKO_SH_TOKEN.
+        if: ${{ !inputs.dry_run }}
+        env:
+          V: ${{ steps.ver.outputs.version }}
+          GH_TOKEN: ${{ secrets.CLOUD_PETZKO_SH_TOKEN }}
+          REPO: petzkod5/cloud-petzko-sh
+          FILE: stacks/argocd/apps/petzko-sh.yaml
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::CLOUD_PETZKO_SH_TOKEN is not set; the VPS prod pin in $REPO was NOT updated."
+            exit 1
+          fi
+          SHA=$(gh api "repos/$REPO/contents/$FILE?ref=main" --jq .sha)
+          gh api "repos/$REPO/contents/$FILE?ref=main" --jq .content | base64 -d > pin.yaml
+          sed -i -E '/^[[:space:]]*image:[[:space:]]*$/{n;s/^([[:space:]]*tag:).*/\1 "'"$V"'"/}' pin.yaml
+          grep -q "tag: \"$V\"" pin.yaml || { echo "::error::Could not set image tag in $FILE"; exit 1; }
+          if gh api "repos/$REPO/contents/$FILE?ref=main" --jq .content | base64 -d | cmp -s - pin.yaml; then
+            echo "VPS pin already on $V"; exit 0
+          fi
+          gh api -X PUT "repos/$REPO/contents/$FILE" \
+            -f message="chore(petzko-sh): deploy $V to VPS prod" \
+            -f branch=main -f sha="$SHA" \
+            -f content="$(base64 -w0 pin.yaml)" --jq .commit.sha
+
       - name: Summary
         run: |
           {
