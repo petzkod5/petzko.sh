@@ -1,3 +1,10 @@
+## [1.25.2](https://github.com/petzkod5/petzko.sh/compare/v1.25.1...v1.25.2) (2026-10-10)
+
+
+### Bug Fixes
+
+* **seo:** name Dylan Petzko in the title, description, and H1 ([#44](https://github.com/petzkod5/petzko.sh/issues/44)) ([08d0319](https://github.com/petzkod5/petzko.sh/commit/08d0319376fd9f3e33669abe3ee7d5aae1c181fa))
+
 ## [1.25.1](https://github.com/petzkod5/petzko.sh/compare/v1.25.0...v1.25.1) (2026-06-25)
 
 

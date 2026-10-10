@@ -7,7 +7,7 @@ clusterId: rivendell
 image:
   # Auto-bumped to the latest release by semantic-release on each release
   # (see .releaserc.json). Immutable semver tag → no pull policy override needed.
-  tag: "1.25.1"
+  tag: "1.25.2"
 
 httpRoute:
   hostname: petzko.home.local
