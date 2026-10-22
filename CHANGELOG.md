@@ -1,3 +1,10 @@
+## [1.25.4](https://github.com/petzkod5/petzko.sh/compare/v1.25.3...v1.25.4) (2026-10-22)
+
+
+### Bug Fixes
+
+* **deps:** update node.js to v24.22.1 (Oct 2026 security release) ([#47](https://github.com/petzkod5/petzko.sh/issues/47)) ([31e9085](https://github.com/petzkod5/petzko.sh/commit/31e90851ba216dc834d6f9ceca95443bf88b258b))
+
 ## [1.25.3](https://github.com/petzkod5/petzko.sh/compare/v1.25.2...v1.25.3) (2026-10-10)
 
 
